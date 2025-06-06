@@ -2,7 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import LandingPage from './pages/index';
 import Dashboard from './pages/dashboard';
 import DocsSite from './pages/docs';
-import Onboarding from './pages/onboarding';
+import OnboardingPage from './pages/onboarding';
 
 function App() {
   return (
@@ -10,7 +10,7 @@ function App() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/docs/:repoId" element={<DocsSite />} />
-      <Route path="/onboarding/:repoId" element={<Onboarding />} />
+      <Route path="/onboarding/:repoId" element={<OnboardingPage />} />
     </Routes>
   );
 }

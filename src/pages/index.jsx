@@ -15,7 +15,6 @@ export default function LandingPage() {
 
     checkSession();
 
-    // Optional: Handle future auth state changes
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) navigate('/dashboard');
     });
@@ -25,19 +24,27 @@ export default function LandingPage() {
     };
   }, [navigate]);
 
-  const signInWithGitHub = async () => {
-    await supabase.auth.signInWithOAuth({ provider: 'github' });
+  const signInWithProvider = async (provider) => {
+    await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: window.location.origin + '/dashboard'
+      }
+    });
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen">
-      <h1 className="text-4xl font-bold mb-4">Welcome to RepoSensei</h1>
-      <button
-        onClick={signInWithGitHub}
-        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-      >
-        Sign in with GitHub
-      </button>
+    <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
+      <h1 className="text-4xl font-bold mb-6">Welcome to RepoSensei</h1>
+      <div className="space-y-4">
+        <button
+          onClick={() => signInWithProvider('github')}
+          className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800"
+        >
+          Sign in with GitHub
+        </button>
+        
+      </div>
     </div>
   );
 }

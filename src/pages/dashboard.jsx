@@ -7,10 +7,19 @@ export default function Dashboard() {
   const [repos, setRepos] = useState([]);
   const [newRepoUrl, setNewRepoUrl] = useState('');
   const navigate = useNavigate();
-  const user = supabase.auth.session()?.user;
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    if (!user) return navigate('/');
+    const getUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return navigate('/');
+      setUser(session.user);
+    };
+    getUser();
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
     fetchRepos();
   }, [user]);
 
@@ -32,9 +41,23 @@ export default function Dashboard() {
     fetchRepos();
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/');
+  };
+
   return (
     <div className="p-8">
-      <h2 className="text-3xl font-bold mb-4">Your Repositories</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-3xl font-bold">Your Repositories</h2>
+        <button
+          onClick={handleLogout}
+          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+        >
+          Logout
+        </button>
+      </div>
+
       <div className="mb-6 flex">
         <input
           type="text"
@@ -47,6 +70,7 @@ export default function Dashboard() {
           Connect Repo
         </button>
       </div>
+
       <ul className="space-y-4">
         {repos.map((r) => (
           <li key={r.repoId} className="border p-4 rounded-lg flex justify-between items-center">
@@ -55,12 +79,16 @@ export default function Dashboard() {
               <p className="text-sm text-gray-500">Last Scanned: {new Date(r.lastScanned).toLocaleString()}</p>
             </div>
             <div className="space-x-2">
-              <button onClick={() => navigate(`/docs/${r.repoId}`)} className="px-3 py-1 border rounded">
+              <button onClick={() => navigate(`/docs/${encodeURIComponent(r.repoId)}`)} className="px-3 py-1 border rounded">
                 View Docs
               </button>
-              <button onClick={() => navigate(`/onboarding/${r.repoId}`)} className="px-3 py-1 border rounded">
-                Onboarding
-              </button>
+              <button
+                  onClick={() => navigate(`/onboarding/${encodeURIComponent(r.repoId)}`)}
+                  className="px-3 py-1 border rounded"
+                >
+                  Onboarding
+                </button>
+
               <button
                 onClick={() => {
                   axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/repo/scan`, {

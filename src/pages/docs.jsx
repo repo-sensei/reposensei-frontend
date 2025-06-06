@@ -6,6 +6,7 @@ import MentorChatWidget from '../components/MentorChatWidget';
 
 export default function DocsSite() {
   const { repoId } = useParams();
+  const decodedRepoId = decodeURIComponent(repoId);
   const [mermaidCode, setMermaidCode] = useState('');
   const [hotspots, setHotspots] = useState([]);
   const [changeSummary, setChangeSummary] = useState('');
@@ -18,23 +19,32 @@ export default function DocsSite() {
   }, [repoId]);
 
   const fetchArchitecture = async () => {
-    const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/docs/architecture/${repoId}`);
-    setMermaidCode(res.data.mermaid);
-    mermaid.initialize({ startOnLoad: false });
-    mermaid.render('architectureChart', res.data.mermaid, (svgCode) => {
-      const container = document.getElementById('arch-svg');
-      if (container) container.innerHTML = svgCode;
-    });
-  };
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/docs/architecture/${encodeURIComponent(decodedRepoId)}`);
+      const mermaidText = res.data.mermaid;
+
+      setMermaidCode(mermaidText); // this puts it in the <pre> for Mermaid to pick up
+
+      // Initialize and run after short delay to let React render <pre>
+      setTimeout(() => {
+        mermaid.initialize({ startOnLoad: false });
+        mermaid.run(); // tells Mermaid to look for <pre class="mermaid"> and render it
+      }, 0);
+    } catch (err) {
+      console.error('Mermaid graph fetch/render error:', err);
+    }
+};
+
+
 
   const fetchHotspots = async () => {
-    const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/docs/hotspots/${repoId}`);
+    const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/docs/hotspots/${encodeURIComponent(decodedRepoId)}`);
     setHotspots(res.data.hotspots);
   };
 
   const fetchChanges = async () => {
     const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/changes/${repoId}`, {
+    const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/changes/${encodeURIComponent(decodedRepoId)}`, {
       params: { since: oneWeekAgo }
     });
     setChangeSummary(res.data.summary);
@@ -46,8 +56,11 @@ export default function DocsSite() {
 
       <section className="mb-8">
         <h3 className="text-2xl font-semibold mb-2">Architecture Graph</h3>
-        <div id="arch-svg" className="border p-4 rounded-lg"></div>
+        <div className="border p-4 rounded-lg">
+          <pre className="mermaid">{mermaidCode}</pre>
+        </div>
       </section>
+
 
       <section className="mb-8">
         <h3 className="text-2xl font-semibold mb-2">Technical-Debt Hotspots</h3>
