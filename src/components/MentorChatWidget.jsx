@@ -6,7 +6,15 @@ export default function MentorChatWidget({ repoId }) {
   const [open, setOpen] = useState(false);
   const [question, setQuestion] = useState('');
   const [logs, setLogs] = useState([]);
-  const user = supabase.auth.session()?.user;
+  const [user, setUser] = useState(null);
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return navigate('/');
+      setUser(session.user);
+    };
+    getUser();
+  }, []);
 
   useEffect(() => {
     if (open && repoId) fetchLogs();
