@@ -64,7 +64,7 @@ export default function OnboardingPage() {
 
   return (
     <div className="p-8">
-      <h2 className="text-2xl font-bold mb-4">First 7 Tasks for {decodedRepoId}</h2>
+      <h2 className="text-2xl font-bold mb-4">First few Tasks for {decodedRepoId}</h2>
 
       <button
         onClick={generateTasks}

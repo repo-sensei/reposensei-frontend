@@ -1,13 +1,13 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import mermaid from 'mermaid';
 import MentorChatWidget from '../components/MentorChatWidget';
 
 export default function DocsSite() {
   const { repoId } = useParams();
   const decodedRepoId = decodeURIComponent(repoId);
-  const [mermaidCode, setMermaidCode] = useState('');
+  const [svgUrl, setSvgUrl] = useState('');
+  const [svgMarkup, setSvgMarkup] = useState('');
   const [hotspots, setHotspots] = useState([]);
   const [changeSummary, setChangeSummary] = useState('');
 
@@ -20,34 +20,53 @@ export default function DocsSite() {
 
   const fetchArchitecture = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/docs/architecture/${encodeURIComponent(decodedRepoId)}`);
-      const mermaidText = res.data.mermaid;
-
-      setMermaidCode(mermaidText); // this puts it in the <pre> for Mermaid to pick up
-
-      // Initialize and run after short delay to let React render <pre>
-      setTimeout(() => {
-        mermaid.initialize({ startOnLoad: false });
-        mermaid.run(); // tells Mermaid to look for <pre class="mermaid"> and render it
-      }, 0);
-    } catch (err) {
-      console.error('Mermaid graph fetch/render error:', err);
+      // Attempt to fetch as JSON link first
+      const resJson = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/api/docs/architecture/${encodeURIComponent(decodedRepoId)}`
+      );
+      if (resJson.data.svgUrl) {
+        setSvgUrl(resJson.data.svgUrl);
+        return;
+      }
+    } catch (e) {
+      // ignore JSON error, try raw SVG
     }
-};
-
-
+    try {
+      // Fallback: fetch raw SVG
+      const resSvg = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/api/docs/architecture/${encodeURIComponent(decodedRepoId)}`,
+        { responseType: 'text' }
+      );
+      if (resSvg.headers['content-type']?.includes('image/svg+xml')) {
+        setSvgMarkup(resSvg.data);
+      }
+    } catch (err) {
+      console.error('Graphviz graph fetch error:', err);
+    }
+  };
 
   const fetchHotspots = async () => {
-    const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/docs/hotspots/${encodeURIComponent(decodedRepoId)}`);
-    setHotspots(res.data.hotspots);
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/api/docs/hotspots/${encodeURIComponent(decodedRepoId)}`
+      );
+      setHotspots(res.data.hotspots);
+    } catch (err) {
+      console.error('Hotspots fetch error:', err);
+    }
   };
 
   const fetchChanges = async () => {
-    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/changes/${encodeURIComponent(decodedRepoId)}`, {
-      params: { since: oneWeekAgo }
-    });
-    setChangeSummary(res.data.summary);
+    try {
+      const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const res = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/api/changes/${encodeURIComponent(decodedRepoId)}`,
+        { params: { since: oneWeekAgo } }
+      );
+      setChangeSummary(res.data.summary);
+    } catch (err) {
+      console.error('Changes fetch error:', err);
+    }
   };
 
   return (
@@ -56,11 +75,17 @@ export default function DocsSite() {
 
       <section className="mb-8">
         <h3 className="text-2xl font-semibold mb-2">Architecture Graph</h3>
-        <div className="border p-4 rounded-lg">
-          <pre className="mermaid">{mermaidCode}</pre>
+        <div className="border p-4 rounded-lg flex justify-center">
+          {/* If we have a URL, render via <img> */}
+          {svgUrl ? (
+            <img src={svgUrl} alt="Architecture Graph" className="max-w-full h-auto" />
+          ) : svgMarkup ? (
+            <div className="max-w-full overflow-auto" dangerouslySetInnerHTML={{ __html: svgMarkup }} />
+          ) : (
+            <p>Loading graph...</p>
+          )}
         </div>
       </section>
-
 
       <section className="mb-8">
         <h3 className="text-2xl font-semibold mb-2">Technical-Debt Hotspots</h3>
