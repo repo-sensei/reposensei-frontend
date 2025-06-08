@@ -1,82 +1,51 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import axios from 'axios';
 import MentorChatWidget from '../components/MentorChatWidget';
+import ArchitectureGraph from '../components/ArchitectureGraph';  // Import your new component
 
 export default function DocsSite() {
   const { repoId } = useParams();
   const decodedRepoId = decodeURIComponent(repoId);
-  const [svgUrl, setSvgUrl] = useState('');
-  const [svgMarkup, setSvgMarkup] = useState('');
+
+
   const [hotspots, setHotspots] = useState([]);
+  const [suggestions, setSuggestions] = useState({});
+  const [loadingSuggestions, setLoadingSuggestions] = useState({});
   const [changeSummary, setChangeSummary] = useState('');
-  const [suggestions, setSuggestions] = useState({}); // nodeId -> string (suggestions text)
-  const [loadingSuggestions, setLoadingSuggestions] = useState({}); 
 
   useEffect(() => {
     if (!repoId) return;
-    fetchArchitecture();
     fetchHotspots();
-    //fetchChanges();
+    // fetchChanges(); 
   }, [repoId]);
-
-  const fetchArchitecture = async () => {
-  try {
-    const resJson = await axios.get(
-      `${import.meta.env.VITE_BACKEND_URL}/api/docs/architecture/${encodeURIComponent(decodedRepoId)}`
-    );
-    console.log('Architecture JSON:', resJson.data);
-    if (resJson.data.svgUrl) {
-      setSvgUrl(`${import.meta.env.VITE_BACKEND_URL}${resJson.data.svgUrl}`);
-      return;
-    }
-  } catch (e) {
-    console.error('Error fetching JSON SVG:', e);
-  }
-
-  try {
-    const resSvg = await axios.get(
-      `${import.meta.env.VITE_BACKEND_URL}/api/docs/architecture/${encodeURIComponent(decodedRepoId)}`,
-      { responseType: 'text' }
-    );
-    console.log('SVG fallback data:', resSvg.data);
-    if (resSvg.headers['content-type']?.includes('image/svg+xml')) {
-      setSvgMarkup(resSvg.data);
-    }
-  } catch (err) {
-    console.error('Error fetching fallback raw SVG:', err);
-  }
-};
-
 
   const fetchHotspots = async () => {
     try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/api/docs/hotspots/${encodeURIComponent(decodedRepoId)}`
-      );
-      setHotspots(res.data.hotspots);
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/docs/hotspots/${encodeURIComponent(decodedRepoId)}`);
+      const data = await res.json();
+      setHotspots(data.hotspots);
     } catch (err) {
       console.error('Hotspots fetch error:', err);
     }
   };
+
   const fetchSuggestions = async (nodeId) => {
     setLoadingSuggestions((prev) => ({ ...prev, [nodeId]: true }));
     try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/api/docs/hotspots/${encodeURIComponent(decodedRepoId)}/${encodeURIComponent(nodeId)}/suggestions`
-      );
-      if (res.data.success) {
-        setSuggestions((prev) => ({ ...prev, [nodeId]: res.data.suggestions }));
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/docs/hotspots/${encodeURIComponent(decodedRepoId)}/${encodeURIComponent(nodeId)}/suggestions`);
+      const data = await res.json();
+      if (data.success) {
+        setSuggestions((prev) => ({ ...prev, [nodeId]: data.suggestions }));
       } else {
         setSuggestions((prev) => ({ ...prev, [nodeId]: 'No suggestions found.' }));
       }
-    } catch (err) {
-      console.error('Error fetching suggestions:', err);
+    } catch {
       setSuggestions((prev) => ({ ...prev, [nodeId]: 'Error fetching suggestions.' }));
     } finally {
       setLoadingSuggestions((prev) => ({ ...prev, [nodeId]: false }));
     }
   };
+
   const fetchChanges = async () => {
     try {
       const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -97,22 +66,14 @@ export default function DocsSite() {
       <section className="mb-8">
         <h3 className="text-2xl font-semibold mb-2">Architecture Graph</h3>
         <div className="border p-4 rounded-lg flex justify-center">
-          {/* If we have a URL, render via <img> */}
-          
-          {svgUrl ? (
-            
-            <img src={svgUrl} alt="Architecture Graph" className="max-w-full h-auto" />
-          ) : svgMarkup ? (
-            <div className="max-w-full overflow-auto" dangerouslySetInnerHTML={{ __html: svgMarkup }} />
-          ) : (
-            <p>Loading graph...</p>
-          )}
+          {/* Render new ArchitectureGraph component */}
+          <ArchitectureGraph repoId={decodedRepoId} />
         </div>
       </section>
 
       <section className="mb-8">
         <h3 className="text-2xl font-semibold mb-2">Technical-Debt Hotspots</h3>
-       <ul className="space-y-4">
+        <ul className="space-y-4">
           {hotspots.map((h) => (
             <li key={h.nodeId} className="border rounded p-4">
               <div className="flex justify-between items-center mb-2">
@@ -138,7 +99,6 @@ export default function DocsSite() {
             </li>
           ))}
         </ul>
-
       </section>
 
       <section className="mb-8">
