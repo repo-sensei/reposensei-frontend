@@ -1,106 +1,158 @@
-import { useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const Repo = require('../models/Repo');
+const NodeModel = require('../models/Node');
+const CommitModel = require('../models/Commit');
+const { ensureRepoCloned, getRecentCommitsWithFiles } = require('../services/gitService');
+const { collectSourceFiles, parseFile } = require('../services/astService');
+const { upsertCodeEmbedding } = require('../services/vectorService');
 
-export default function OnboardingPage() {
-  const { repoId } = useParams();
-  const decodedRepoId = decodeURIComponent(repoId);
+const router = express.Router();
 
-  const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [generating, setGenerating] = useState(false);
-
-  useEffect(() => {
-    if (repoId) {
-      fetchTasks();
+router.post('/scan', async (req, res) => {
+  try {
+    const { repoUrl, repoId, userId } = req.body;
+    if (!repoUrl || !repoId || !userId) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Missing repoUrl, repoId, or userId' });
     }
-  }, [repoId]);
 
-  const fetchTasks = async () => {
-    setLoading(true);
-    setError(null);
+    // 1) Clone (or pull) the repository locally
+    const repoPath = await ensureRepoCloned(repoUrl, repoId);
 
-    try {
-      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/tasks/${encodeURIComponent(decodedRepoId)}`);
-      setTasks(res.data.tasks);
+    // 2) Fetch commits (up to 50) including filesChanged
+    const commits = await getRecentCommitsWithFiles(repoPath);
+    console.log(`Fetched ${commits.length} commits`);
 
-      // If no tasks, generate then fetch again
-      if (res.data.tasks.length === 0) {
-        await generateTasks();
+    // 3) Insert each commit into Mongo + embed commit message & filesChanged
+    for (const c of commits) {
+      await CommitModel.updateOne(
+        { sha: c.sha },
+        {
+          $setOnInsert: {
+            repoId,
+            sha: c.sha,
+            message: c.message,
+            author: c.author,
+            date: new Date(c.date),
+            filesChanged: c.filesChanged || []
+          }
+        },
+        { upsert: true }
+      );
+
+      await upsertCodeEmbedding(
+        repoId,
+        'commit',
+        c.sha,
+        c.message,
+        {
+          author: c.author,
+          date: c.date,
+          files: c.filesChanged || []
+        }
+      );
+    }
+
+    // 4) AST‐parse all source files and insert nodes + embeddings
+    const files = collectSourceFiles(repoPath);
+    console.log(`Collected ${files.length} source files`);
+
+    for (const file of files) {
+      await NodeModel.deleteMany({ filePath: file });
+
+      const nodes = parseFile(file, repoId, (() => {
+        const relativePath = path.relative(repoPath, file);
+        return path.dirname(relativePath).replace(/\\/g, '/') || 'root';
+      })());
+
+      const srcContent = fs.readFileSync(file, 'utf-8');
+
+      for (const node of nodes) {
+        // Save node document with new fields
+        await NodeModel.create({
+          repoId,
+          nodeId: node.nodeId,
+          filePath: node.filePath,
+          module: node.module,
+          startLine: node.startLine,
+          endLine: node.endLine,
+          type: node.type,
+          name: node.name,
+          complexity: node.complexity,
+          complexityBreakdown: node.complexityBreakdown,
+          calledFunctions: node.calledFunctions,
+          calledBy: node.calledBy || [],          // Add calledBy here
+          isExported: node.isExported,
+          parentName: node.parentName,
+          parameters: node.parameters,
+          scopeLevel: node.scopeLevel,
+          isAsync: node.isAsync,
+          returnsValue: node.returnsValue || false,
+          jsDocComment: node.jsDocComment || '',
+          fileType: node.fileType || 'unknown',
+          httpEndpoint: node.httpEndpoint || null,
+          invokesAPI: node.invokesAPI || false,
+          invokesDBQuery: node.invokesDBQuery || false,
+          relatedComponents: node.relatedComponents || []
+        });
+
+        // Extract snippet lines for embedding
+        const snippet = srcContent
+          .split('\n')
+          .slice(node.startLine - 1, node.endLine)
+          .join('\n');
+
+        await upsertCodeEmbedding(
+          repoId,
+          'node',
+          node.nodeId,
+          snippet,
+          { filePath: node.filePath, module: node.module }
+        );
       }
-    } catch (err) {
-      console.error("Failed to fetch onboarding tasks:", err);
-      setError("Failed to fetch onboarding tasks.");
-    } finally {
-      setLoading(false);
     }
-  };
 
-  const generateTasks = async () => {
-    setGenerating(true);
-    setError(null);
-    try {
-      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/tasks/generate`, {
-        repoId: decodedRepoId,
-      });
-      await fetchTasks();
-    } catch (err) {
-      console.error("Failed to generate onboarding tasks:", err);
-      setError("Failed to generate onboarding tasks.");
-    } finally {
-      setGenerating(false);
+    // 5) Save/update the Repo document with lastScanned timestamp
+    await Repo.updateOne(
+      { repoId },
+      {
+        $set: {
+          repoUrl,
+          userId,
+          lastScanned: new Date()
+        }
+      },
+      { upsert: true }
+    );
+
+    console.log('Repository metadata saved');
+    return res.status(200).json({ success: true, message: 'Repo scanned successfully.' });
+  } catch (err) {
+    console.error('Error in /api/repo/scan:', err);
+    return res.status(500).json({ success: false, message: 'Scan failed.', error: err.message });
+  }
+});
+
+
+// GET /api/repo/list?userId=<userId>
+router.get('/list', async (req, res) => {
+  try {
+    const { userId } = req.query;
+    if (!userId) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Missing userId query parameter' });
     }
-  };
 
-  const completeTask = async (taskId) => {
-    try {
-      await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/tasks/${taskId}/complete`);
-      fetchTasks(); // Refresh tasks after marking complete
-    } catch (err) {
-      console.error("Failed to complete task:", err);
-    }
-  };
+    const repos = await Repo.find({ userId });
+    return res.status(200).json({ success: true, repos });
+  } catch (err) {
+    console.error('Error in /api/repo/list:', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
 
-  return (
-    <div className="p-8">
-      <h2 className="text-2xl font-bold mb-4">First few Tasks for {decodedRepoId}</h2>
-
-      <button
-        onClick={generateTasks}
-        disabled={generating}
-        className="mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-      >
-        {generating ? "Generating Tasks..." : "Refresh Tasks"}
-      </button>
-
-      {loading ? (
-        <div className="text-gray-500 animate-pulse">⏳ Loading tasks...</div>
-      ) : error ? (
-        <p className="text-red-500">{error}</p>
-      ) : tasks.length === 0 ? (
-        <p className="text-gray-500">No tasks found.</p>
-      ) : (
-        <ul className="space-y-4">
-          {tasks.map((t) => (
-            <li key={t._id} className="border p-4 rounded-lg flex justify-between items-start">
-              <div>
-                <h3 className="font-semibold">{t.title}</h3>
-                <p className="text-gray-600">{t.description}</p>
-                
-                <button
-                  onClick={() => completeTask(t._id)}
-                  className={`px-3 py-1 rounded ${
-                    t.isCompleted ? 'bg-green-500 text-white' : 'border'
-                  }`}
-                >
-                  {t.isCompleted ? 'Completed' : 'Mark Complete'}
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
+module.exports = router;
