@@ -76,26 +76,38 @@ export default function Dashboard() {
           <li key={r.repoId} className="border p-4 rounded-lg flex justify-between items-center">
             <div>
               <p className="font-semibold">{r.repoId}</p>
-              <p className="text-sm text-gray-500">Last Scanned: {new Date(r.lastScanned).toLocaleString()}</p>
+              <p className="text-sm text-gray-500">
+                Last Scanned: {new Date(r.lastScanned).toLocaleString()}
+              </p>
             </div>
             <div className="space-x-2">
-              <button onClick={() => navigate(`/docs/${encodeURIComponent(r.repoId)}`)} className="px-3 py-1 border rounded">
+              <button
+                onClick={() => navigate(`/docs/${encodeURIComponent(r.repoId)}`)}
+                className="px-3 py-1 border rounded"
+              >
                 View Docs
               </button>
+              
               <button
-                  onClick={() => navigate(`/onboarding/${encodeURIComponent(r.repoId)}`)}
-                  className="px-3 py-1 border rounded"
-                >
-                  Onboarding
-                </button>
+                onClick={() =>
+                  navigate(`/onboarding/${encodeURIComponent(r.repoId)}`, {
+                    state: { userId: user.id },
+                  })
+                }
+                className="px-3 py-1 border rounded"
+              >
+                Onboarding
+              </button>
 
               <button
                 onClick={() => {
-                  axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/repo/scan`, {
-                    repoUrl: r.repoUrl,
-                    repoId: r.repoId,
-                    userId: user.id
-                  }).then(fetchRepos);
+                  axios
+                    .post(`${import.meta.env.VITE_BACKEND_URL}/api/repo/scan`, {
+                      repoUrl: r.repoUrl,
+                      repoId: r.repoId,
+                      userId: user.id,
+                    })
+                    .then(fetchRepos);
                 }}
                 className="px-3 py-1 border rounded"
               >
