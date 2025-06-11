@@ -9,14 +9,14 @@ export default function LandingPage() {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate('/dashboard');
+        navigate('/selectrepo');
       }
     };
 
     checkSession();
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) navigate('/dashboard');
+      if (session) navigate('/selectrepo');
     });
 
     return () => {
@@ -28,7 +28,7 @@ export default function LandingPage() {
     await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: window.location.origin + '/dashboard'
+        redirectTo: window.location.origin + '/selectrepo'
       }
     });
   };
