@@ -18,10 +18,13 @@ export default function DashboardSidebar({ repoId, user }) {
   const [active, setActive] = useState("profile");
 
   useEffect(() => {
-    if (location.pathname.includes("/onboarding")) setActive("onboarding");
-    else if (location.pathname.includes("/docs")) setActive("architecture");
-    else setActive("profile");
-  }, [location.pathname]);
+  if (location.pathname.includes("/onboarding")) setActive("onboarding");
+  else if (location.pathname.includes("/docs")) setActive("architecture");
+  else if (location.pathname.includes("/hotspots")) setActive("hotspots");
+  else if (location.pathname.includes("/commits")) setActive("changes");
+  else setActive("profile");
+}, [location.pathname]);
+
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -49,7 +52,9 @@ export default function DashboardSidebar({ repoId, user }) {
       id: "architecture",
       label: "Architecture",
       icon: Building2,
-      onClick: () => navigate(`/docs/${encodeURIComponent(repoId)}`),
+      onClick: () => navigate(`/docs/${encodeURIComponent(repoId)}`, {
+        state: { user },
+      }),
     },
     {
       id: "onboarding",
@@ -64,18 +69,24 @@ export default function DashboardSidebar({ repoId, user }) {
       id: "hotspots",
       label: "Hotspots",
       icon: Flame,
-      disabled: true,
+       onClick: () =>
+        navigate(`/hotspots/${encodeURIComponent(repoId)}`, {
+          state: { user },
+        }),
     },
     {
       id: "changes",
       label: "Changes",
       icon: GitCompare,
-      disabled: true,
+      onClick: () =>
+        navigate(`/commits/${encodeURIComponent(repoId)}`, {
+          state: { user },
+        }),
     },
   ];
 
   return (
-    <aside className="w-full sm:w-64 h-auto sm:h-screen bg-[#111315] text-white px-6 py-8 shadow-lg flex-shrink-0 flex flex-col justify-between rounded-xl">
+    <aside className="w-full sm:w-64 h-auto sm:h-screen bg-black text-white px-6 py-8 shadow-lg flex-shrink-0 flex flex-col justify-between rounded-xl">
       {/* Heading and Menu */}
       <div>
         <p className="text-2xl font-600 mb-10 tracking-wide text-left">

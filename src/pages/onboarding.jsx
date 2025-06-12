@@ -225,7 +225,7 @@ const fetchCriticalTasks = async () => {
   if (!step || !step.stepId) return <div className="text-center text-gray-400 py-10">Unknown step</div>;
 
   return (
-    <div className="flex flex-col sm:flex-row min-h-screen bg-[#1A1C1E] text-gray-900">
+    <div className="flex flex-col sm:flex-row min-h-screen bg-[#111315] text-gray-900">
 
   <DashboardSidebar repoId={repoId} user={user}/>
  <main className="flex-1 p-4 sm:p-6  overflow-y-auto">
@@ -271,7 +271,7 @@ const fetchCriticalTasks = async () => {
       <button
         key={option}
         onClick={() => handleNext(option)}
-        className="bg-[#111315] hover:bg-[#1a1d1f] border border-[#2c2f31] p-6 rounded-2xl shadow-lg text-left group transition-all"
+        className="bg-black hover:bg-[#1a1d1f] border border-[#2c2f31] p-6 rounded-2xl shadow-lg text-left group transition-all"
       >
         <div className="flex items-center gap-4 mb-4">
           <div className="text-2xl font-600 text-white uppercase">{option}</div>
@@ -318,7 +318,7 @@ const fetchCriticalTasks = async () => {
   <>
     {generating && !overviewHtml && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm">
-        <div className="bg-[#111315] border border-[#2c2f31] rounded-2xl p-10 text-center shadow-2xl w-full max-w-xl">
+        <div className="bg-black border border-[#2c2f31] rounded-2xl p-10 text-center shadow-2xl w-full max-w-xl">
           <h3 className="text-2xl font-bold text-white mb-4 tracking-wide">
             Generating Smart Overview...
           </h3>
@@ -344,12 +344,12 @@ const fetchCriticalTasks = async () => {
 
     {!overviewHtml && !generating && (
       <div className="text-center">
-        <div className="flex flex-col items-center justify-center p-10 bg-[#111315] border border-[#2c2f31] rounded-2xl shadow-md">
+        <div className="flex flex-col items-center justify-center p-10 bg-black border border-[#2c2f31] rounded-2xl shadow-md">
           <div className="text-5xl mb-4 animate-pulse text-blue-400">
             <Code className="w-10 h-10" />
           </div>
 
-          <h3 className="text-2xl text-white font-bold mb-2 tracking-wide">
+          <h3 className="text-2xl text-white font-bold mb-2 tracking-wide uppercase">
             Smart Overview Generator
           </h3>
 
@@ -392,7 +392,7 @@ const fetchCriticalTasks = async () => {
   <>
     {generatingCritical && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm">
-        <div className="bg-[#111315] border border-[#2c2f31] rounded-2xl p-10 text-center shadow-2xl w-full max-w-xl">
+        <div className="bg-black border border-[#2c2f31] rounded-2xl p-10 text-center shadow-2xl w-full max-w-xl">
           <h3 className="text-2xl font-bold text-white mb-4 tracking-wide">
             Auditing Code Quality...
           </h3>
@@ -415,12 +415,12 @@ const fetchCriticalTasks = async () => {
 
     {!generatingCritical && (!step.tasks || step.tasks.length === 0) && (
       <div className="text-center">
-        <div className="flex flex-col items-center justify-center p-10 bg-[#111315] border border-[#2c2f31] rounded-2xl shadow-md">
+        <div className="flex flex-col items-center justify-center p-10 bg-black border border-[#2c2f31] rounded-2xl shadow-md">
           <div className="text-5xl mb-4 animate-pulse text-sky-400">
             <Sparkles className="w-10 h-10" />
           </div>
 
-          <h3 className="text-2xl text-white font-bold mb-2 tracking-wide">
+          <h3 className="text-2xl text-white font-bold mb-2 tracking-wide uppercase">
             Code Quality Fixes
           </h3>
 
