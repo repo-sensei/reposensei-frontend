@@ -5,13 +5,13 @@ import DashboardSidebar from '../components/common/DashboardSidebar';
 
 export default function RecentChanges() {
   const [changeSummary, setChangeSummary] = useState('');
+  const [formattedSummary, setFormattedSummary] = useState('');
   const [loading, setLoading] = useState(true);
   const { repoId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
 
   const [user, setUser] = useState(null);
-  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
     const incomingUser = location.state?.user;
@@ -22,7 +22,6 @@ export default function RecentChanges() {
     }
 
     setUser(incomingUser);
-    setUserId(incomingUser.id);
   }, []);
 
   useEffect(() => {
@@ -34,7 +33,9 @@ export default function RecentChanges() {
         const res = await axios.get(
           `${import.meta.env.VITE_BACKEND_URL}/api/changes/${encodeURIComponent(repoId)}`
         );
-        setChangeSummary(res.data.summary);
+        const raw = res.data.summary;
+        setChangeSummary(raw);
+        setFormattedSummary(formatMarkdown(raw));
       } catch (err) {
         console.error('Changes fetch error:', err);
         setChangeSummary('Error fetching change summary.');
@@ -43,13 +44,50 @@ export default function RecentChanges() {
       }
     };
 
-    fetchChanges();
+    //fetchChanges();
   }, [repoId]);
+
+  const formatMarkdown = (text) => {
+  if (!text) return '';
+
+  return text
+    // Escape HTML special characters to prevent rendering issues
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+
+    // Headings: ###, ##, ####
+    .replace(/^#### (.*$)/gim, '<h4 class="text-md font-semibold mt-3 mb-1 text-indigo-300">$1</h4>')
+    .replace(/^### (.*$)/gim, '<h3 class="text-xl font-bold mt-4 mb-2 text-white">$1</h3>')
+    .replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold mt-4 mb-2 text-white">$1</h2>')
+    .replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold mt-4 mb-2 text-white">$1</h1>')
+
+    // Bold: **text**
+    .replace(/\*\*(.*?)\*\*/g, '<strong class="text-indigo-400">$1</strong>')
+
+    // Inline code or file paths: `code`
+    .replace(/`([^`]+)`/g, '<code class="bg-gray-800 px-1 py-0.5 rounded text-sm text-green-400">$1</code>')
+
+    // Numbered lists: 1. Item
+    .replace(/^\d+\.\s(.*$)/gim, '<li class="ml-6 list-decimal">$1</li>')
+
+    // Bullet points: - Item
+    .replace(/^- (.*$)/gim, '<li class="ml-6 list-disc">$1</li>')
+
+    // Wrap list items in <ul> or <ol> manually
+    .replace(/(<li class="ml-6 list-disc">[\s\S]*?<\/li>)/gim, '<ul class="my-2">$1</ul>')
+    .replace(/(<li class="ml-6 list-decimal">[\s\S]*?<\/li>)/gim, '<ol class="my-2">$1</ol>')
+
+    // Paragraph breaks
+    .replace(/\n{2,}/g, '<br /><br />')
+    .replace(/\n/g, '<br />');
+};
+
 
   return (
     <div className="flex flex-col sm:flex-row min-h-screen bg-[#111315] text-gray-100">
       <DashboardSidebar repoId={repoId} user={user} />
-      <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
+       <main className="flex-1 p-4 sm:p-6 space-y-6 overflow-y-auto">
         <section className="mb-8">
           <h3 className="text-2xl font-semibold mb-4 text-white">Recent Changes</h3>
 
@@ -68,9 +106,10 @@ export default function RecentChanges() {
               <p className="text-sm text-zinc-400 mt-4 ml-1">Fetching recent commits...</p>
             </div>
           ) : (
-            <pre className="whitespace-pre-wrap border border-gray-700 p-4 rounded-lg bg-[#1c1f22] text-gray-200">
-              {changeSummary}
-            </pre>
+            <div
+              className="prose prose-invert max-w-none text-gray-300"
+              dangerouslySetInnerHTML={{ __html: formattedSummary }}
+            />
           )}
         </section>
       </main>
