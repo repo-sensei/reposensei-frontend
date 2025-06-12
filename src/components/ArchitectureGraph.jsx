@@ -31,8 +31,8 @@ export default function ArchitectureGraph({ repoId }) {
     fetchGraph();
   }, [repoId]);
 
-  if (loading) return <p>Loading graph...</p>;
-  if (!elements.length) return <p>No graph data available.</p>;
+  if (loading) return <p className="text-gray-300">Loading graph...</p>;
+  if (!elements.length) return <p className="text-gray-300">No graph data available.</p>;
 
   return (
     <CytoscapeComponent
@@ -40,84 +40,60 @@ export default function ArchitectureGraph({ repoId }) {
       style={{ width: '100%', height: '600px' }}
       layout={{
         name: 'dagre',
-        rankDir: 'LR',     // Left to Right for horizontal flow
-        nodeSep: 60,
-        edgeSep: 30,
-        rankSep: 100,
-        animate: true,
-        animationDuration: 1000,
+        rankDir: 'LR',
+        nodeSep: 80,
+        edgeSep: 40,
+        rankSep: 120,
         fit: true,
       }}
       zoom={1}
-      minZoom={0.5}
+      minZoom={0.4}
       maxZoom={2}
-      pan={{ x: 0, y: 0 }}
       stylesheet={[
-        {
-          selector: 'node.module',
-          style: {
-            'background-color': '#E3F2FD',
-            'border-width': 2,
-            'border-color': '#2196F3',
-            label: 'data(label)',
-            'text-valign': 'top',
-            'text-halign': 'center',
-            color: '#0D47A1',
-            'font-weight': 'bold',
-            'font-size': 14,
-            'text-outline-width': 0,
-            padding: '10px',
-            shape: 'roundrectangle',
-          },
-        },
         {
           selector: 'node',
           style: {
-            'background-color': 'data(backgroundColor)',
+            shape: 'roundrectangle',
+            'background-color': '#1F2937',
+            'border-color': '#4B5563',
+            'border-width': 2,
             label: 'data(label)',
             'text-valign': 'center',
             'text-halign': 'center',
-            color: '#222',
-            'font-size': 11,
+            color: '#D1D5DB',
+            'font-size': 12,
+            'font-weight': '500',
             'text-wrap': 'wrap',
             'text-max-width': 100,
-            'text-outline-width': 1,
-            'text-outline-color': '#fff',
-            shape: 'ellipse',
+            padding: '6px',
             width: 'label',
             height: 'label',
-            padding: '6px 12px',
           },
         },
         {
           selector: 'edge',
           style: {
-            width: 2,
-            'line-color': 'data(color)',
-            'target-arrow-color': 'data(color)',
+            width: 1.5,
+            'line-style': 'dotted',
+            'line-color': '#6B7280',
+            'target-arrow-color': '#6B7280',
             'target-arrow-shape': 'triangle',
             'curve-style': 'bezier',
-            opacity: 0.8,
             label: 'data(relationship)',
-            'font-size': 9,
+            color: '#9CA3AF',
+            'font-size': 10,
             'text-rotation': 'autorotate',
-            color: '#555',
             'text-margin-y': -10,
-          },
-        },
-        {
-          selector: 'edge:hover',
-          style: {
-            'line-color': '#FF5722',
-            'target-arrow-color': '#FF5722',
-            width: 4,
-            opacity: 1,
+            'text-background-color': '#111827',
+            'text-background-opacity': 1,
+            'text-background-padding': 2,
           },
         },
       ]}
+      pan={{ x: 0, y: 0 }}
       userZoomingEnabled={true}
       userPanningEnabled={true}
-      boxSelectionEnabled={true}
+      boxSelectionEnabled={false}
     />
   );
 }

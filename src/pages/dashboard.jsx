@@ -23,7 +23,7 @@ useEffect(() => {
 }, []);
 
   return (
-   <div className="flex flex-col sm:flex-row min-h-screen bg-[#1A1C1E] text-gray-900">
+   <div className="flex flex-col sm:flex-row min-h-screen bg-[#111315] text-gray-900">
   {/* Sidebar */}
   <DashboardSidebar repoId={repoId} user={user} />
 
