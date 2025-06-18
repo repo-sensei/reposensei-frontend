@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import axios from 'axios';
-import DashboardSidebar from '../components/common/DashboardSidebar';
+import MainLayout from '../components/common/MainLayout';
 
 export default function RecentChanges() {
   const [changeSummary, setChangeSummary] = useState('');
@@ -85,9 +85,7 @@ export default function RecentChanges() {
 
 
   return (
-    <div className="flex flex-col sm:flex-row min-h-screen bg-[#111315] text-gray-100">
-      <DashboardSidebar repoId={repoId} user={user} />
-       <main className="flex-1 p-4 sm:p-6 space-y-6 overflow-y-auto">
+    <MainLayout user={user} repoId={repoId}>
         <section className="mb-8">
           <h3 className="text-2xl font-semibold mb-4 text-white">Recent Changes</h3>
 
@@ -112,7 +110,6 @@ export default function RecentChanges() {
             />
           )}
         </section>
-      </main>
-    </div>
+      </MainLayout>
   );
 }

@@ -8,7 +8,7 @@ const formatMERNOverviewHTML = (html) => {
 
   // === 2. Highlight function/variable names like `fetchGoals`
   html = html.replace(/`([a-zA-Z_][a-zA-Z0-9_]*)`/g,
-    '<code class="text-yellow-400 font-mono">$1</code>'
+    '<code class="text-blue-400 font-mono">$1</code>'
   );
 
   // === 3. Highlight and wrap project paths as headings (e.g., client\src\components)
@@ -20,7 +20,7 @@ const formatMERNOverviewHTML = (html) => {
   html = html.replace(/<li><strong>([^<]+)<\/strong>\s*<p>([\s\S]*?)<\/p>\s*}/g,
     `<li class="mb-4">
       <h4 class="text-lg font-semibold text-white">$1</h4>
-      <div class="text-sm text-gray-300 leading-relaxed">$2</div>
+      <div class="text-base text-gray-300 leading-relaxed">$2</div>
     </li>`
   );
 
@@ -51,7 +51,7 @@ const formatMERNOverviewHTML = (html) => {
 html = html.replace(/(?:^|\n)([A-Z][a-zA-Z\s]+)\n(- \*\*.+?)(?=\n[A-Z]|\n\n|<\/p>|$)/g, 
   (_match, heading, bullets) => {
     return `
-      <h5 class="mt-4 mb-2 text-md font-semibold text-blue-400">${heading.trim()}</h5>
+      <h5 class="mt-4 mb-2 text-base font-semibold text-blue-400">${heading.trim()}</h5>
       ${bullets}
     `;
   }
@@ -78,12 +78,17 @@ const DetailedOverview = ({ html }) => {
   const formatted = formatMERNOverviewHTML(html);
 
   return (
-    <section className="bg-[#111315] dark:bg-[#111315] text-gray-100 border border-gray-700 rounded-xl p-6 mt-4 shadow-sm">
-      <h3 className="text-2xl font-semibold mb-4 text-white">Detailed Overview</h3>
-      <div
-        className="prose prose-invert max-w-none custom-html"
-        dangerouslySetInnerHTML={{ __html: formatted }}
-      />
+    <section className="mt-8 mr-10">
+       <h3 className="text-2xl font-semibold mb-2 text-white"><span className="text-[#C2C2C2] font-medium">Detailed</span> Overview</h3>
+      <p className="text-[#B3B3B3] mb-4">Explore the purpose and function of each file, with insights into structure, data flow, and component roles.
+
+</p>
+      <div className="bg-[#21262D] dark:bg-[#21262D] text-gray-100 rounded-xl p-8 shadow-sm">
+        <div
+          className="prose prose-invert max-w-none custom-html text-[1.05rem] leading-relaxed"
+          dangerouslySetInnerHTML={{ __html: formatted }}
+        />
+      </div>
     </section>
   );
 };

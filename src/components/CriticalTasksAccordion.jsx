@@ -1,5 +1,6 @@
 // components/onboarding/CriticalTasksAccordion.jsx
 import { FileText, Hash, Flame, AlertTriangle, CheckCircle } from "lucide-react";
+import { Icon } from '@iconify-icon/react';
 
 const SEVERITY_STYLES = {
   1: {
@@ -9,7 +10,7 @@ const SEVERITY_STYLES = {
   },
   2: {
     label: "Medium",
-    color: "bg-yellow-500 text-black",
+    color: "bg-[#FFBE32]/30 text-black",
     icon: <AlertTriangle size={16} className="text-yellow-300" />,
   },
   3: {
@@ -32,44 +33,94 @@ const CriticalTasksAccordion = ({ tasks }) => {
   };
 
   return (
-    <div className="space-y-6 mt-10 text-white">
-      <div className="bg-gradient-to-br from-gray-800 to-gray-900 p-5 rounded-2xl shadow-md border border-gray-700">
-        <h2 className="text-xl font-semibold mb-2 text-white">Critical Code Issues</h2>
-        <p className="text-gray-400 text-sm leading-relaxed">
-          These tasks identify important code issues like <span className="text-yellow-400">ESLint warnings</span>, 
-          <span className="text-red-400"> complex logic</span>, or 
-          <span className="text-green-400"> bad practices</span>. Resolving them improves code quality and speeds up onboarding.
+    <div className="space-y-6 mt-10 text-white mr-20">
+      
+      <div>
+      <h3 className="text-2xl font-semibold text-white">
+            <span className="text-[#C2C2C2] font-medium">Code Quality</span> Audits
+        </h3>
+        <p className="text-gray-400 text-sm mt-2">
+          These tasks identify important code issues like <span className="text-[#E45454] font-medium">ESLint warnings</span>, 
+          <span className="text-[#CAF5BB] font-medium"> complex logic</span>, or 
+          <span className="text-[#3E8EF7] font-medium"> bad practices</span>. 
         </p>
       </div>
+        
+     
 
       {Object.entries(grouped).map(([file, taskList], idx) => (
         <details
           key={idx}
-          className="border border-gray-700 rounded-xl bg-[#111315] shadow-sm transition-all duration-300 overflow-hidden group"
+          className="border border-gray-700 rounded-xl bg-[#21262D] shadow-sm transition-all duration-300 overflow-hidden group"
         >
-          <summary className="cursor-pointer select-none px-5 py-4 font-semibold text-white hover:bg-gray-800 flex items-center gap-3">
+          <summary className="cursor-pointer select-none px-5 py-4 font-semibold text-white hover:bg-gray-800 flex items-center gap-3 justify-between">
+            <div className="flex justify-center items-center gap-3">
             <FileText size={18} className="text-gray-400" />
-            <span className="truncate text-m">{cleanPath(file)}</span>
+            <span className="truncate text-sm text-[#C6C6C6]">{cleanPath(file)}</span>
+            </div>
+            
+
+            <div className="flex justify-center items-center gap-2">
+            <Icon icon="duo-icons:bug" width="20" height="20"  style={{color: "#E45454"}} />
             <span className="ml-auto text-sm text-gray-500">{taskList.length} issue(s)</span>
+            </div>
+            
           </summary>
 
-          <ul className="px-6 py-4 space-y-4 bg-[#1a1d1f]">
+          <ul className="px-6 py-4 space-y-4 bg-[#21262D]">
             {taskList.map((task, i) => {
               const style = SEVERITY_STYLES[task.severity] || SEVERITY_STYLES[1];
 
               return (
-                <li key={i} className="bg-[#23272a] p-4 rounded-lg shadow flex flex-col gap-2 border border-gray-700">
+                <li key={i} className="bg-[#1B2027] p-4 rounded-lg shadow flex flex-col gap-2 border border-gray-700">
                   <div className="flex items-center gap-3 text-sm text-gray-300">
-                    <Hash size={16} className="text-gray-500" />
-                    <span>Line {task.line}</span>
-                    <span className={`ml-auto flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${style.color}`}>
+                    <span className="text-[#519CFF]">@ Line {task.line}</span>
+                    <span className={`ml-auto flex items-center gap-1 text-xs font-medium px-2 py-2 rounded-full ${style.color}`}>
                       {style.icon}
-                      {style.label}
+                    
                     </span>
                   </div>
-                  <p className="text-sm text-gray-100 leading-snug">
-                    {task.description !== "none" ? task.description : "No description provided."}
-                  </p>
+
+
+                  <div className="flex flex-col gap-2">
+                    <p className="text-sm text-gray-100 leading-snug">
+                      {task.description !== "none" ? task.description : "No description provided."}
+                    </p>
+
+                    {task.fileContent && (
+  <div className="bg-[#1c1c1c] rounded-md overflow-hidden border border-[#292929] mt-2">
+    <div className="text-xs font-mono text-gray-300">
+      {task.fileContent
+        .slice(Math.max(0, task.line - 3), task.line + 2)
+        .map((line, idx, arr) => {
+          const displayLine = Math.max(0, task.line - 3) + idx + 1; // actual line number (1-based)
+          const isErrorLine = displayLine === task.line;
+
+          return (
+            <div
+              key={idx}
+              className={`flex px-4 py-1 ${
+                isErrorLine
+                  ? 'bg-[#2f1f1f] border-l-4 border-[#FF6B6B]'
+                  : 'bg-[#1c1c1c]'
+              }`}
+            >
+              <span className="w-10 text-right pr-3 text-gray-500 select-none">
+                {displayLine}
+              </span>
+              <code className="whitespace-pre-wrap text-sm text-gray-200">
+                {line}
+              </code>
+            </div>
+          );
+        })}
+    </div>
+  </div>
+)}
+
+
+                  </div>
+
                 </li>
               );
             })}
