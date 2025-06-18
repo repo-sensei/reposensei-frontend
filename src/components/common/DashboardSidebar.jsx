@@ -8,14 +8,21 @@ import {
   FolderOpen,
   LogOut,
 } from "lucide-react";
+import React from 'react';
+import classNames from 'classnames';
+
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "../../supabaseClient"; // Ensure this import is present
+import Logo from '../../assets/logo.png';
+import { Icon } from '@iconify-icon/react';
 
 export default function DashboardSidebar({ repoId, user }) {
+   const [collapsed, setCollapsed] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
   const [active, setActive] = useState("profile");
+
 
   useEffect(() => {
   if (location.pathname.includes("/onboarding")) setActive("onboarding");
@@ -42,8 +49,8 @@ export default function DashboardSidebar({ repoId, user }) {
   const menu = [
     {
       id: "profile",
-      label: "Profile",
-      icon: UserCircle,
+      label: "Dashboard",
+      icon: <Icon icon="mage:dashboard-4" width="21" height="21" />,
       onClick: () => navigate(`/dashboard/${encodeURIComponent(repoId)}`, {
       state: { user },
     }),
@@ -51,24 +58,15 @@ export default function DashboardSidebar({ repoId, user }) {
     {
       id: "architecture",
       label: "Architecture",
-      icon: Building2,
+      icon: <Icon icon="fluent:flowchart-16-regular" width="22" height="22" />,
       onClick: () => navigate(`/docs/${encodeURIComponent(repoId)}`, {
         state: { user },
       }),
     },
     {
-      id: "onboarding",
-      label: "Onboarding",
-      icon: Briefcase,
-      onClick: () =>
-        navigate(`/onboarding/${encodeURIComponent(repoId)}`, {
-          state: { user },
-        }),
-    },
-    {
       id: "hotspots",
       label: "Hotspots",
-      icon: Flame,
+      icon: <Icon icon="ph:fire-duotone" width="22" height="22" />,
        onClick: () =>
         navigate(`/hotspots/${encodeURIComponent(repoId)}`, {
           state: { user },
@@ -77,59 +75,175 @@ export default function DashboardSidebar({ repoId, user }) {
     {
       id: "changes",
       label: "Changes",
-      icon: GitCompare,
+      icon: <Icon icon="tabler:status-change" width="22" height="22" />,
       onClick: () =>
         navigate(`/commits/${encodeURIComponent(repoId)}`, {
+          state: { user },
+        }),
+    },
+    {
+      id: "onboarding",
+      label: "Onboarding",
+      icon: <Icon icon="solar:suitcase-bold" width="22" height="22" />,
+      onClick: () =>
+        navigate(`/onboarding/${encodeURIComponent(repoId)}`, {
           state: { user },
         }),
     },
   ];
 
   return (
-    <aside className="w-full sm:w-64 h-auto sm:h-screen bg-black text-white px-6 py-8 shadow-lg flex-shrink-0 flex flex-col justify-between rounded-xl">
-      {/* Heading and Menu */}
+    <aside
+  className={classNames(
+    "h-screen bg-[#21262D] text-white py-8 shadow-lg flex-shrink-0 flex flex-col justify-between transition-all duration-300 border-r border-[#3A3838]",
+    collapsed ? "w-20 px-2" : "w-55 px-2"
+  )}
+>
+  <div>
+    <div
+  className={classNames(
+    "flex items-center mb-10 px-2 ",
+    collapsed ? "justify-center" : "justify-between"
+  )}
+>
+  {!collapsed ? (
+    <p className="text-2xl font-medium tracking-wide text-left flex items-center">
+      <img src={Logo} alt="Logo" className="w-7 h-7 mr-3" />
       <div>
-        <p className="text-2xl font-600 mb-10 tracking-wide text-left">
-            Repo<span className="text-[#2F89FF]">Sensei</span>
+        <p className="text-base font-medium">
+          <span className="bg-gradient-to-r from-[#CAF5BB] to-[#2F89FF] bg-clip-text text-transparent sub-head">
+            RepoSensei
+          </span>
         </p>
-
-        <div className="flex flex-col items-center space-y-6">
-          {menu.map(({ id, label, icon: Icon, onClick, disabled }) => (
-            <button
-              key={id}
-              onClick={onClick}
-              disabled={disabled}
-              className={`flex flex-row items-center px-4 py-2 rounded-xl w-full transition
-                ${disabled ? "opacity-30 cursor-not-allowed" : ""}
-                ${active === id ? "text-[#2F89FF]" : "text-white hover:bg-white/10"}`}
-            >
-              <Icon className={`w-6 h-6 ${active === id ? "text-[#2F89FF]" : "text-white"}`} />
-              <span className={`text-sm ml-4 ${active === id ? "font-semibold" : ""}`}>
-                {label}
-              </span>
-            </button>
-          ))}
-        </div>
+        <p className="text-xs text-[#C9C9C9]">Your repo with AI clarity</p>
       </div>
-
-      {/* Action Buttons */}
-      <div className="mt-8 flex flex-col items-center space-y-4">
-        <button 
-            onClick={handleRefresh}
-            className="text-sm flex items-center justify-center px-4 py-2 bg-[#37BD6B]/15 text-[#37BD6B] rounded hover:bg-[#37BD6B]/25 transition w-full"
-            >
-            <RefreshCcw className="w-5 h-5 mr-2" /> Refresh Changes
-            </button>
+    </p>
+  ) : (
+    <img src={Logo} alt="Logo" className="w-8 h-8" />
+  )}
+</div>
 
 
-        <button
-          onClick={() => navigate("/selectrepo")}
-          className=" text-sm flex items-center justify-center px-4 py-2 bg-[#2F89FF] text-white-800 rounded hover:bg-gray-400 transition w-full"
-        >
-          <FolderOpen className="w-5 h-5 mr-2" /> Select Repo
-        </button>
+    {/* Menu Items */}
+    <div
+  className={classNames(
+    "flex flex-col space-y-2",
+    collapsed ? "items-center" : "items-start"
+  )}
+>
+  {menu.map(({ id, label, icon, onClick, disabled }) => (
+    <button
+      key={id}
+      onClick={onClick}
+      disabled={disabled}
+      className={classNames(
+        "transition",
+        {
+          "opacity-30 cursor-not-allowed": disabled,
+          "text-white bg-[#2F89FF]": active === id, 
+          "text-white hover:bg-white/10": active !== id,
+          // Styling when collapsed (perfect circle centered)
+          "justify-center items-center rounded-full h-10 w-10": collapsed,
+          // Styling when expanded
+          "flex items-center py-2 rounded-xl w-full px-4": !collapsed,
+        }
+      )}
+    >
+      <span className="flex items-center justify-center">
+        {React.cloneElement(icon, {
+          className: `w-6 h-6 ${active === id ? "text-white" : "text-white"}`,
+        })}
+        {!collapsed && (
+          <span className={`ml-2 text-xs ${active === id ? "font-semibold" : ""}`}>
+            {label}
+          </span>
+        )}
+      </span>
+    </button>
+  ))}
+</div>
 
+  </div>
+
+  {/* Bottom Section: Action Buttons + Collapse Toggle */}
+  <div className="flex flex-col items-center space-y-4">
+      <button
+  className={classNames(
+    "transition rounded-xl w-full",
+    {
+      "flex items-center px-4 py-4 bg-[#292E37] border border-[#313843]": !collapsed,
+      "flex justify-center items-center w-12 h-12 bg-[transparent] border-none": collapsed,
+    }
+  )}
+>
+  {collapsed ? (
+    <div className="w-10 h-10 rounded-full bg-[#2E343B] flex items-center justify-center">
+      <Icon
+        icon="solar:chat-round-call-line-duotone"
+        width="24"
+        height="24"
+        className="text-[#799AD6]"
+      />
+    </div>
+  ) : (
+    <div className="flex items-center space-x-3">
+      <div className="w-10 h-10 rounded-full bg-[#21262D] flex items-center justify-center">
+        <Icon
+          icon="solar:chat-round-call-line-duotone"
+          width="24"
+          height="24"
+          className="text-[#799AD6]"
+        />
       </div>
-    </aside>
+      <div className="flex flex-col text-left">
+        <span className="text-white font-semibold text-xs leading-tight">
+          AI Powered Pairing
+        </span>
+        <span className="text-white/60 text-xs">Enter here</span>
+      </div>
+    </div>
+  )}
+</button>
+
+
+
+
+   <button
+  onClick={() => navigate("/selectrepo")}
+  className={classNames(
+    "text-xs flex items-center text-[#CAF5BB] transition gap-3",
+    {
+      // Collapsed: icon in circular blue background
+      "w-10 h-10 rounded-full justify-center bg-[#CAF5BB]/15": collapsed,
+      // Expanded: full-width button with text
+      "px-4 py-3 rounded w-full bg-[#CAF5BB]/15 hover:bg-[#37BD6B]/25": !collapsed,
+    }
+  )}
+>
+   <RefreshCcw className={classNames("w-5 h-5", { "mr-2": !collapsed })} />
+  {!collapsed && "Select Repo"}
+</button>
+
+
+    {/* Collapse Toggle Button */}
+    <button
+      onClick={() => setCollapsed(!collapsed)}
+      className={classNames(
+        "text-[#9CA0B2] text-sm flex items-center justify-left mt-8 ",
+        collapsed ? "w-full justify-center" : "w-full justify-start"
+      )}
+    >
+      {collapsed ? (
+        <span><Icon icon="tabler:layout-sidebar-right-collapse-filled" width="24" height="24" /></span>
+      ) : (
+        <>
+          <span className="mr-2"><Icon icon="tabler:layout-sidebar-left-collapse-filled" width="22" height="22" /></span>
+          <span className="text-[12px]">Collapse Menu</span>
+        </>
+      )}
+    </button>
+  </div>
+</aside>
+
   );
 }

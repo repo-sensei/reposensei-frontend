@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import React from 'react';
 
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
-import DashboardSidebar from '../components/common/DashboardSidebar';
+import MainLayout from '../components/common/MainLayout';
 
 export default function Hotspots() {
   const [hotspots, setHotspots] = useState([]);
@@ -63,10 +63,7 @@ export default function Hotspots() {
   };
 
   return (
-  <div className="flex flex-col sm:flex-row min-h-screen bg-[#111315] text-gray-900">
-    <DashboardSidebar repoId={repoId} user={user} />
-
-    <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
+  <MainLayout user={user} repoId={repoId}>
       <div className="h-screen overflow-auto text-black px-6 py-10">
         <h3 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white">
           Technical-Debt Hotspots
@@ -178,8 +175,7 @@ export default function Hotspots() {
           </table>
         </div>
       </div>
-    </main>
-  </div>
+    </MainLayout>
 );
 
 

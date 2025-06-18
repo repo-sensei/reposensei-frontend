@@ -3,9 +3,16 @@
 @tailwind utilities;
 
 body {
-  font-family: "Roboto Mono", monospace;
+  font-family: "Manrope", sans-serif;
   font-optical-sizing: auto;
+  background-color: #1B2027
  
+}
+.sub-head {
+  
+  font-family: "Inter", sans-serif;
+  font-optical-sizing: auto;
+  
 }
 .custom-html h3,
 .custom-html h4 {
@@ -17,11 +24,11 @@ body {
 }
 
 .custom-html code {
-  @apply bg-gray-800 text-green-400 px-1 py-0.5 rounded font-mono text-xs;
+  @apply bg-[#1B2027] text-green-400 px-1 py-0.5 rounded font-mono text-sm;
 }
 
 .custom-html pre {
-  @apply bg-gray-900 text-green-300 p-4 rounded text-sm overflow-x-auto;
+  @apply bg-gray-900 text-green-300 p-4 rounded text-base overflow-x-auto;
 }
 
 .custom-html strong {
@@ -34,7 +41,7 @@ body {
 
 .custom-html ul,
 .custom-html ol {
-  @apply list-disc pl-6 text-sm text-gray-200;
+  @apply list-disc pl-6 text-base text-gray-200;
 }
 
 .custom-html li {

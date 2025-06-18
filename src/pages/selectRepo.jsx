@@ -4,6 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Loader2 } from 'lucide-react'; // loader icon
 import { SiNodedotjs, SiJavascript, SiReact, SiTailwindcss } from "react-icons/si";
+import Logo from '../assets/logo.png';
+import Header from '../components/common/Header';
+
+import { Icon } from '@iconify-icon/react';
+
 
 const SelectRepo = () => {
   const [user, setUser] = useState(null);
@@ -62,82 +67,92 @@ const SelectRepo = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#111315] text-white p-6 flex flex-col items-center relative overflow-hidden">
+     <div className="relative">
+      <Header user={user} />
+   
+    <div className="min-h-screen text-white p-6 flex flex-col items-center relative overflow-hidden">
         <div className="absolute top-6 left-8 z-10 ">
-        <p className="text-2xl font-600">
-            Repo<span className="text-[#2F89FF]">Sensei</span>
-        </p>
+        <div className="flex items-center space-x-4">
+        {/* Logo */}
+        <img src={Logo} alt="Logo" className="w-8 h-8" />
 
-      </div>
-      <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
-        <button
-          className="text-sm px-4 py-3 bg-white/10 rounded hover:bg-white/20"
-          onClick={async () => {
-            await supabase.auth.signOut();
-            navigate('/');
-          }}
-        >
-          LOGOUT
-        </button>
-        <div className="bg-white text-black rounded px-3 py-2 text-sm">
-          <div className="font-semibold leading-tight">{user?.email}</div>
-          <div className="text-xs -mt-1">Authenticated</div>
+        <div>
+          <p className="text-xl font-semibold">
+            <span className="bg-gradient-to-r from-[#CAF5BB] to-[#2F89FF] bg-clip-text text-transparent">
+            RepoSensei
+          </span>
+          </p>
+          <p className="text-xs text-[#C9C9C9]">Your repo with AI clarity</p>
         </div>
       </div>
+      </div>
+      
 
-      <div className="flex flex-col items-center justify-center h-screen w-full">
+      <div className="flex flex-row items-center justify-center h-screen w-full gap-40">
 
-      <h1 className="text-3xl sm:text-4xl font-500  text-center z-10">
-        GET STARTED WITH A <span className="text-[#2F89FF]">CODEBASE</span>
+      <h1 className="font-medium text-left z-10 flex flex-col gap-2 flex-wrap">
+        <span className="text-4xl sm:text-4xl text-[#E5E5E5]">Get Started with a</span>
+        <span className="text-5xl sm:text-5xl bg-gradient-to-r from-[#CAF5BB] to-[#2F89FF] bg-clip-text text-transparent">
+          Codebase
+        </span>
       </h1>
 
-      {/* Buttons */}
-      <div className="mt-6 flex gap-3 z-10">
-        <button
-          onClick={() => setShowRepoModal(true)}
-          className="bg-[#2F89FF] text-white px-5 py-2 rounded text-m"
-        >
-          NEW PROJECT +
-        </button>
-        <button className="bg-white text-black px-5 py-2 rounded text-m">
-          SELECT PROJECT
-        </button>
-      </div>
+
+      <div>
 
       {/* Repo List */}
-      <div className="bg-black/20 rounded mt-10 w-full max-w-xl p-4 z-10">
-        <h2 className="text-sm text-white/60 mb-2">RECENTLY OPENED</h2>
+      <div className="bg-[#21262D] rounded-lg mt-10 w-full max-w-6xl p-6 z-10 shadow-md">
+        <div className="flex flex-col sm:flex-row items-center justify-between mb-4">
+      <h2 className="text-white/70 font-medium ">Your Repositories</h2>
+      <button
+          onClick={() => setShowRepoModal(true)}
+          className="bg-[#30363E] text-white px-5 py-1 rounded text-sm"
+        >
+          New Project + 
+        </button>
+        </div>
+        
+
         {repos.map((repo) => (
           <div
             key={repo.repoId}
-            className={`mb-3 bg-[#111315] border ${selectedRepoId === repo.repoId ? 'border-[#2F89FF]' : 'border-gray-700'} text-m rounded p-4 cursor-pointer hover:border-[#2F89FF]`}
+            className={`mb-4 bg-[#1B2027] border ${
+              selectedRepoId === repo.repoId ? 'border-[#2F89FF]' : 'border-gray-700'
+            } text-sm rounded-lg p-5 cursor-pointer hover:border-[#2F89FF] transition-all duration-150`}
             onClick={() => setSelectedRepoId(repo.repoId)}
           >
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
               <div>
-                <p className="font-mono break-all">{repo.repoId}</p>
-                <p className="text-xs text-white/50">
+                <p className="font-mono text-white break-all text-[18px]">{repo.repoId}</p>
+                <p className="text-[12px] text-white/50">
                   Last Scanned: {new Date(repo.lastScanned).toLocaleString()}
                 </p>
               </div>
-             <div className="flex items-center gap-3 text-white text-xl">
+
+              <div className="flex flex-wrap items-center gap-4 text-white text-lg ml-20">
                 <SiNodedotjs className="text-green-500" title="Node.js" />
                 <SiJavascript className="text-yellow-400" title="JavaScript" />
                 <SiReact className="text-cyan-400" title="React" />
                 <SiTailwindcss className="text-blue-400" title="Tailwind CSS" />
-                </div>
+              </div>
             </div>
           </div>
         ))}
       </div>
 
+
       {/* Continue Button */}
       <button
         onClick={handleContinue}
-        className="mt-10 bg-[#2F89FF] text-white px-10 py-3 text-sm rounded z-10"
+        className="mt-5 bg-white text-black px-10 py-2 text-sm rounded z-10"
       >
-        CONTINUE
+        Continue
       </button>
+
+      </div>
+
+
+      
     </div>  
       {/* Modal */}
       {showRepoModal && (
@@ -185,6 +200,7 @@ const SelectRepo = () => {
         </div>
       )}
     </div>
+     </div>
   );
 };
 

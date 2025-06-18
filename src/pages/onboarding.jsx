@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { Loader2, Paintbrush, Code, Sparkles  } from 'lucide-react';
-import DashboardSidebar from '../components/common/DashboardSidebar';
 import DetailedOverview from '../components/DetailedOverview';
 import OnboardingTasks from '../components/OnboardingTasks';
 import CriticalTasksAccordion from '../components/CriticalTasksAccordion';
+import MainLayout from '../components/common/MainLayout';
+
 import {
   SiReact,
   SiTailwindcss,
@@ -225,23 +226,15 @@ const fetchCriticalTasks = async () => {
   if (!step || !step.stepId) return <div className="text-center text-gray-400 py-10">Unknown step</div>;
 
   return (
-    <div className="flex flex-col sm:flex-row min-h-screen bg-[#111315] text-gray-900">
+    <MainLayout user={user} repoId={repoId}>
+  
 
-  <DashboardSidebar repoId={repoId} user={user}/>
- <main className="flex-1 p-4 sm:p-6  overflow-y-auto">
-  <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
-          <div className="bg-white text-black rounded px-3 py-2 text-sm">
-            <div className="font-semibold leading-tight">{user?.email}</div>
-            <div className="text-xs -mt-1">Authenticated</div>
-          </div>
-        </div>
-
-  <div className="h-screen overflow-auto text-black px-6 py-10">
+  <div className="h-screen overflow-auto text-black ">
     {/* Step: Choose Role */}
     {step.stepId === 'choose-role' && (
       <div className="max-w-5xl mx-auto text-center">
-        <h1 className="text-3xl sm:text-4xl font-600  text-center z-10 text-white mt-20">
-        HOW DO YOU WANT TO EXPLORE THIS <span className="text-[#2F89FF]">CODEBASE</span> ?
+        <h1 className="text-4xl sm:text-4xl font-normal  text-center z-10 text-white mt-40">
+        How do you want to explore this <span className="bg-gradient-to-r from-[#CAF5BB] to-[#2F89FF] bg-clip-text text-transparent">Codebase</span> ?
       </h1>
         <p className="text-xl text-[#d3d3d3] text-500 mb-12 mt-5">
           {step.prompt || 'Choose how you’d like to explore this project.'}
@@ -271,10 +264,10 @@ const fetchCriticalTasks = async () => {
       <button
         key={option}
         onClick={() => handleNext(option)}
-        className="bg-black hover:bg-[#1a1d1f] border border-[#2c2f31] p-6 rounded-2xl shadow-lg text-left group transition-all"
+        className="bg-[#21262D] hover:bg-[#1a1d1f] border border-[#2c2f31] p-6 rounded-2xl shadow-lg text-left group transition-all"
       >
         <div className="flex items-center gap-4 mb-4">
-          <div className="text-2xl font-600 text-white uppercase">{option}</div>
+          <div className="text-2xl font-600 text-white capitalize">{option}</div>
           {isFrontend ? frontendIcons : backendIcons}
         </div>
         <p className="text-gray-400 text-m">
@@ -290,34 +283,57 @@ const fetchCriticalTasks = async () => {
     )}
 
     {step.stepId === 'show-overview-and-tasks' && (
-  <div className="max-w-5xl mx-auto text-white">
-    <h2 className="text-3xl font-600 mb-2 uppercase">Context-Aware <span className="text-[#2F89FF]">Onboarding</span></h2>
-    <div className="border-b border-gray-700 mb-6"></div>
+  <div className="flex h-full text-white ">
+    {/* Sidebar */}
+    <div className="w-64 bg-[#21262D] p-10 min-h-screen">
+      <h2 className="text-m font-normal mb-4 leading-snug text-[#E6E6E6]">
+        Context-Aware<br />
+        <span className="text-white text-xl">Onboarding</span>
+      </h2>
 
-    <div className="flex space-x-6 mb-6">
-      {['overview', 'onboarding', 'critical'].map((tab) => (
-        <button
-          key={tab}
-          onClick={() => setActiveTab(tab)}
-          className={`capitalize text-lg pb-1 border-b-2 transition-all ${
-            activeTab === tab
-              ? 'border-blue-500 text-blue-400'
-              : 'border-transparent text-gray-400 hover:text-blue-300'
+      <div className="border-b border-white-700 mb-6"></div>
+
+      <div className="flex flex-col space-y-4">
+  {['overview', 'onboarding', 'critical'].map((tab) => {
+    const isActive = activeTab === tab;
+
+    return (
+      <button
+        key={tab}
+        onClick={() => setActiveTab(tab)}
+        className={`flex items-center gap-2 text-left capitalize text-sm py-1 px-2 rounded transition-all
+          ${isActive ? 'bg-gradient-to-r from-[#CAF5BB] to-[#2F89FF] bg-clip-text text-transparent font-semibold' : 'text-[#D3D3D3] hover:text-blue-300'}`}
+      >
+        {/* Dot Icon */}
+        <div
+          className={`w-2.5 h-2.5 rounded-full transition-all ${
+            isActive
+              ? 'bg-[#CAF5BB] shadow-[0_0_6px_2px_rgba(202,245,187,0.5)]'
+              : 'bg-[#D3D3D3]'
           }`}
-        >
-          {tab === 'overview'
-            ? 'Overview'
-            : tab === 'onboarding'
-            ? 'Onboarding Tasks'
-            : 'Quality Audit'}
-        </button>
-      ))}
+        />
+
+        {/* Label */}
+        {tab === 'overview'
+          ? 'Overview'
+          : tab === 'onboarding'
+          ? 'Onboarding Tasks'
+          : 'Quality Audit'}
+      </button>
+    );
+  })}
+</div>
+
     </div>
 
+
+ <div className="flex-1 p-10 overflow-auto bg-[#1B2027]">
+  <div className='ml-20'>
+  <p className='mb-20'>onboard / <span className='text-[#A3A2A2]'>{activeTab}</span></p>
     {activeTab === 'overview' && (
   <>
     {generating && !overviewHtml && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#21262D] bg-opacity-60 backdrop-blur-sm">
         <div className="bg-black border border-[#2c2f31] rounded-2xl p-10 text-center shadow-2xl w-full max-w-xl">
           <h3 className="text-2xl font-bold text-white mb-4 tracking-wide">
             Generating Smart Overview...
@@ -331,7 +347,7 @@ const fetchCriticalTasks = async () => {
             {[...Array(4)].map((_, i) => (
               <div
                 key={i}
-                className="w-5 h-5 rounded-full bg-blue-500 animate-bounce"
+                className="w-5 h-5 rounded-full bg-blue-400 animate-bounce"
                 style={{ animationDelay: `${i * 0.2}s` }}
               />
             ))}
@@ -344,12 +360,12 @@ const fetchCriticalTasks = async () => {
 
     {!overviewHtml && !generating && (
       <div className="text-center">
-        <div className="flex flex-col items-center justify-center p-10 bg-black border border-[#2c2f31] rounded-2xl shadow-md">
+        <div className="flex flex-col items-center justify-center p-10 bg-[#21262D] border border-[#2c2f31] rounded-2xl shadow-md">
           <div className="text-5xl mb-4 animate-pulse text-blue-400">
             <Code className="w-10 h-10" />
           </div>
 
-          <h3 className="text-2xl text-white font-bold mb-2 tracking-wide uppercase">
+          <h3 className="text-2xl bg-gradient-to-r from-[#CAF5BB] to-[#2F89FF] bg-clip-text text-transparent font-bold mb-2 tracking-wide ">
             Smart Overview Generator
           </h3>
 
@@ -360,7 +376,7 @@ const fetchCriticalTasks = async () => {
           <button
             onClick={fetchOverview}
             disabled={generating}
-            className="bg-gradient-to-r from-[#2F89FF] to-cyan-500 hover:opacity-90 text-white font-semibold px-6 py-3 rounded-xl transition-all flex items-center gap-2 shadow-lg"
+            className="bg-gradient-to-r from-[#CAF5BB]/50 to-[#2F89FF]/60 hover:opacity-90 text-[#CAF5BB] font-medium px-6 py-2 rounded-xl transition-all flex items-center gap-2 shadow-lg text-sm"
           >
             <Paintbrush className="w-5 h-5" />
             Generate with AI
@@ -391,7 +407,7 @@ const fetchCriticalTasks = async () => {
     {activeTab === 'critical' && (
   <>
     {generatingCritical && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#21262D] bg-opacity-60 backdrop-blur-sm">
         <div className="bg-black border border-[#2c2f31] rounded-2xl p-10 text-center shadow-2xl w-full max-w-xl">
           <h3 className="text-2xl font-bold text-white mb-4 tracking-wide">
             Auditing Code Quality...
@@ -403,7 +419,7 @@ const fetchCriticalTasks = async () => {
             {[...Array(4)].map((_, i) => (
               <div
                 key={i}
-                className="w-5 h-5 rounded-full bg-indigo-500 animate-bounce"
+                className="w-5 h-5 rounded-full bg-blue-400 animate-bounce"
                 style={{ animationDelay: `${i * 0.2}s` }}
               />
             ))}
@@ -415,12 +431,12 @@ const fetchCriticalTasks = async () => {
 
     {!generatingCritical && (!step.tasks || step.tasks.length === 0) && (
       <div className="text-center">
-        <div className="flex flex-col items-center justify-center p-10 bg-black border border-[#2c2f31] rounded-2xl shadow-md">
+        <div className="flex flex-col items-center justify-center p-10 bg-[#21262D] border border-[#2c2f31] rounded-2xl shadow-md">
           <div className="text-5xl mb-4 animate-pulse text-sky-400">
             <Sparkles className="w-10 h-10" />
           </div>
 
-          <h3 className="text-2xl text-white font-bold mb-2 tracking-wide uppercase">
+          <h3 className="text-2xl bg-gradient-to-r from-[#CAF5BB] to-[#2F89FF] bg-clip-text text-transparent font-bold mb-2 tracking-wide ">
             Code Quality Fixes
           </h3>
 
@@ -431,7 +447,7 @@ const fetchCriticalTasks = async () => {
           <button
             onClick={fetchCriticalTasks}
             disabled={generatingCritical}
-            className="bg-gradient-to-r from-sky-500 to-teal-500 hover:opacity-90 text-white font-semibold px-6 py-3 rounded-xl transition-all flex items-center gap-2 shadow-lg"
+            className="bg-gradient-to-r from-[#CAF5BB]/50 to-[#2F89FF]/60 hover:opacity-90 text-[#CAF5BB] font-medium px-6 py-2 rounded-xl transition-all flex items-center gap-2 shadow-lg text-sm"
           >
             <Sparkles className="w-5 h-5" />
             Run Quality Audit
@@ -449,15 +465,15 @@ const fetchCriticalTasks = async () => {
     )}
   </>
 )}
-
-
+</div>
+</div>
   </div>
 )}
 
 
   </div>
-  </main>
-</div>
+
+</MainLayout>
 );
 
 }
