@@ -2,114 +2,190 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import axios from 'axios';
 import MainLayout from '../components/common/MainLayout';
+import Collab1 from '../assets/collab1.png';
+import Collab2 from '../assets/collab2.png';
+import Collab3 from '../assets/collab3.png';
+import Profile from '../assets/pfp.png'; // Adjust path
+
+import { Icon } from '@iconify-icon/react';
 
 export default function RecentChanges() {
-  const [changeSummary, setChangeSummary] = useState('');
-  const [formattedSummary, setFormattedSummary] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [changeSummary, setChangeSummary] = useState({});
+  const [loading, setLoading] = useState(false);
   const { repoId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-
   const [user, setUser] = useState(null);
+  const [activeTab, setActiveTab] = useState('New Features');
 
   useEffect(() => {
     const incomingUser = location.state?.user;
-
     if (!incomingUser || !repoId) {
       navigate('/selectrepo');
       return;
     }
-
     setUser(incomingUser);
   }, []);
 
-  useEffect(() => {
-    if (!repoId) return;
+  const fetchChanges = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/api/changes/${encodeURIComponent(repoId)}`
+      );
+      console.log(res.data.summary.summary);
 
-    const fetchChanges = async () => {
-      setLoading(true);
-      try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/api/changes/${encodeURIComponent(repoId)}`
-        );
-        const raw = res.data.summary;
-        setChangeSummary(raw);
-        setFormattedSummary(formatMarkdown(raw));
-      } catch (err) {
-        console.error('Changes fetch error:', err);
-        setChangeSummary('Error fetching change summary.');
-      } finally {
-        setLoading(false);
-      }
-    };
+      setChangeSummary(res.data.summary.summary);
+    } catch (err) {
+      console.error('Changes fetch error:', err);
+      setChangeSummary({});
+    } finally {
+      setTimeout(() => setLoading(false), 500); // small delay to let spinner be visible
+    }
+  };
 
-    //fetchChanges();
-  }, [repoId]);
-
-  const formatMarkdown = (text) => {
-  if (!text) return '';
-
-  return text
-    // Escape HTML special characters to prevent rendering issues
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-
-    // Headings: ###, ##, ####
-    .replace(/^#### (.*$)/gim, '<h4 class="text-md font-semibold mt-3 mb-1 text-indigo-300">$1</h4>')
-    .replace(/^### (.*$)/gim, '<h3 class="text-xl font-bold mt-4 mb-2 text-white">$1</h3>')
-    .replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold mt-4 mb-2 text-white">$1</h2>')
-    .replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold mt-4 mb-2 text-white">$1</h1>')
-
-    // Bold: **text**
-    .replace(/\*\*(.*?)\*\*/g, '<strong class="text-indigo-400">$1</strong>')
-
-    // Inline code or file paths: `code`
-    .replace(/`([^`]+)`/g, '<code class="bg-gray-800 px-1 py-0.5 rounded text-sm text-green-400">$1</code>')
-
-    // Numbered lists: 1. Item
-    .replace(/^\d+\.\s(.*$)/gim, '<li class="ml-6 list-decimal">$1</li>')
-
-    // Bullet points: - Item
-    .replace(/^- (.*$)/gim, '<li class="ml-6 list-disc">$1</li>')
-
-    // Wrap list items in <ul> or <ol> manually
-    .replace(/(<li class="ml-6 list-disc">[\s\S]*?<\/li>)/gim, '<ul class="my-2">$1</ul>')
-    .replace(/(<li class="ml-6 list-decimal">[\s\S]*?<\/li>)/gim, '<ol class="my-2">$1</ol>')
-
-    // Paragraph breaks
-    .replace(/\n{2,}/g, '<br /><br />')
-    .replace(/\n/g, '<br />');
-};
-
+  const TABS = ['Refactors', 'Fixes & Performance', 'New Features', 'Testing', 'Documentation'];
 
   return (
     <MainLayout user={user} repoId={repoId}>
-        <section className="mb-8">
-          <h3 className="text-2xl font-semibold mb-4 text-white">Recent Changes</h3>
+      <div className="relative h-screen overflow-auto text-black">
+        {/* Loading Overlay */}
+        {loading && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm">
+            <div className="border-4 border-indigo-400 border-t-transparent rounded-full w-12 h-12 animate-spin"></div>
+            <p className="ml-4 text-white text-lg">Generating Changes...</p>
+          </div>
+        )}
 
-          {loading ? (
-            <div className="relative pl-6 py-4">
-              <div className="border-l-4 border-indigo-500 h-full absolute left-3 top-0"></div>
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="mb-6 relative">
-                  <div className="w-3 h-3 bg-indigo-500 rounded-full absolute -left-[7px] top-1"></div>
-                  <div className="ml-4 animate-pulse">
-                    <div className="h-4 bg-zinc-700 rounded w-3/4 mb-2"></div>
-                    <div className="h-3 bg-zinc-700 rounded w-1/2"></div>
-                  </div>
-                </div>
+        <div className={`flex h-full text-white transition-all ${loading ? 'blur-sm pointer-events-none' : ''}`}>
+          {/* Sidebar */}
+          <div className="w-[30%] bg-[#21262D] p-20 pr-10 min-h-screen">
+            <h3 className="text-[24px] font-semibold mb-2 mt-16">
+              <span className="text-[#C2C2C2] font-medium">Recent</span> Code Updates
+            </h3>
+            <p className='text-[#C2C2C2] text-sm'>Timeline</p>
+
+            <div className='flex flex-row gap-7 mb-10 mt-5'>
+              <p className='text-sm'>Contributors</p>
+              <div className="flex -space-x-1 overflow-hidden">
+                <img src={Collab1} alt="Profile" className="w-5 h-5 rounded-full" />
+                <img src={Collab2} alt="Profile" className="w-5 h-5 rounded-full" />
+                <img src={Collab3} alt="Profile" className="w-5 h-5 rounded-full" />
+              </div>
+            </div>
+
+            {/* Tab Navigation */}
+            <div className="flex flex-col space-y-4">
+              {TABS.map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`flex items-center gap-2 text-left capitalize text-sm rounded transition-all ${
+                    activeTab === tab
+                      ? 'bg-gradient-to-r from-[#CAF5BB] to-[#2F89FF] bg-clip-text text-transparent font-semibold'
+                      : 'text-[#D3D3D3] hover:text-blue-300'
+                  }`}
+                >
+                  <div
+                    className={`w-2.5 h-2.5 rounded-full transition-all ${
+                      activeTab === tab
+                        ? 'bg-[#CAF5BB] shadow-[0_0_6px_2px_rgba(202,245,187,0.5)]'
+                        : 'bg-[#D3D3D3]'
+                    }`}
+                  />
+                  {tab}
+                </button>
               ))}
-              <p className="text-sm text-zinc-400 mt-4 ml-1">Fetching recent commits...</p>
+            </div>
+          </div>
+
+          {/* Content Area */}
+          {changeSummary && changeSummary[activeTab] && changeSummary[activeTab].length > 0 ? (
+            <div className="flex-1 p-24 overflow-auto bg-[#1B2027] space-y-6">
+              <h2 className="text-2xl font-semibold mb-10 text-[#61A4FD] ">
+              {activeTab}
+              </h2>
+              {changeSummary[activeTab].map((item, index) => (
+                <div
+                  key={index}
+                  className="p-6 border-l border-l-white  shadow-sm relative pt-0"
+                >
+                  <div className="w-5 h-5 bg-[#474747] rounded-full flex justify-center items-center absolute -left-[10px] top-0"> 
+                    <Icon icon="charm:tick" width="13" height="13"  style={{color: "#FFFFFF"}} />
+                  </div>
+
+                  <div className='flex flex-row items-center gap-5 mb-9'>
+                    <p className="text-sm text-[#B0B0B0] "><span className='font-semibold text-white'>@ {item.author}</span> made <span className='lowercase'>{activeTab} </span>changes</p>
+                    <img src={Profile} alt="Profile" className="w-6 h-65 rounded-full" />
+                  </div>
+                  
+                  <div className="w-5 h-5 bg-[#2F89FF] rounded-full flex justify-center items-center absolute -left-[10px] top-17">
+
+                    <Icon icon="material-symbols-light:files" width="13" height="13"  style={{color: "#FFFFFF"}} />
+                  </div>
+                 <div>
+                    <p className="text-m text-white ">Key files modified:</p>
+                    <ul className="mt-3 flex flex-col gap-2 mb-6">
+                      {item.files.map((file, index) => (
+                        <li
+                          key={index}
+                          className="w-fit text-[#CAF5BB] font-mono text-xs bg-[#2A2E35] p-2 rounded-lg border border-[#3F3F3F]"
+                        >
+                          {file}
+                        </li>
+                      ))}
+                    </ul>
+
+
+                  </div>
+
+                   <div className="bg-[#21262D] p-4 rounded-lg">
+                    <h3 className="text-white text-m font-semibold mb-1">Description</h3>
+                    <p className="text-zinc-400 text-sm font-medium">{item.description}</p>
+                  </div>
+
+                </div>
+                
+              ))}
             </div>
           ) : (
-            <div
-              className="prose prose-invert max-w-none text-gray-300"
-              dangerouslySetInnerHTML={{ __html: formattedSummary }}
-            />
+            <div className="flex-1 p-10 bg-[#1B2027] flex flex-col items-center justify-center text-center">
+              
+              <div className="flex flex-col items-center justify-center p-16 bg-[#21262D] border border-[#2c2f31] rounded-2xl shadow-md text-center">
+                {/* Icon (optional – use any icon you like) */}
+                <div className="text-5xl mb-4 text-blue-400 animate-pulse">
+                  <Icon icon="streamline:ai-redo-spark-solid" width="30" height="30"   />
+                </div>
+
+                {/* Title */}
+                <h3 className="text-2xl font-semibold bg-gradient-to-r from-[#CAF5BB] to-[#2F89FF] bg-clip-text text-transparent mb-2 tracking-wide">
+                  Fetch Smart Updates
+                </h3>
+
+                {/* Subheading */}
+                <p className="text-gray-400 max-w-xl mb-6 text-sm">
+                  We couldn’t detect any updates for <strong className="text-blue-400">{activeTab}</strong>. Try syncing again to view the latest modifications in your repo.
+                </p>
+
+                {/* Action Button */}
+                <button
+                  onClick={fetchChanges}
+                  className="bg-gradient-to-r from-[#CAF5BB]/50 to-[#2F89FF]/60 hover:opacity-90 text-[#CAF5BB] font-medium px-6 py-2 rounded-xl transition-all flex items-center gap-2 shadow-lg text-sm"
+                >
+                  <Icon icon="tabler:report" width="24" height="24"/>
+                  Find Changes
+                </button>
+
+                {/* Footer note */}
+                <p className="text-sm text-gray-500 mt-4 italic">
+                  This ensures your view stays up-to-date.
+                </p>
+              </div>
+
+            </div>
           )}
-        </section>
-      </MainLayout>
+        </div>
+      </div>
+    </MainLayout>
   );
 }

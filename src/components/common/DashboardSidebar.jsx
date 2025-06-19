@@ -221,17 +221,17 @@ export default function DashboardSidebar({ repoId, user }) {
    <button
   onClick={() => navigate("/selectrepo")}
   className={classNames(
-    "text-xs flex items-center text-[#CAF5BB] transition gap-3",
+    "text-xs flex items-center text-[#CAF5BB] transition gap-3 ",
     {
       // Collapsed: icon in circular blue background
       "w-10 h-10 rounded-full justify-center bg-[#CAF5BB]/15": collapsed,
       // Expanded: full-width button with text
-      "px-4 py-3 rounded w-full bg-[#CAF5BB]/15 hover:bg-[#37BD6B]/25": !collapsed,
+      "px-4 py-3 rounded-xl bg-[#CAF5BB]/15 hover:bg-[#37BD6B]/25 flex items-center py-2 rounded-xl w-full px-4": !collapsed,
     }
   )}
 >
    <RefreshCcw className={classNames("w-5 h-5", { "mr-2": !collapsed })} />
-  {!collapsed && "Select Repo"}
+  {!collapsed && "Switch Repository"}
 </button>
 
 
