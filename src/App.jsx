@@ -6,6 +6,7 @@ import Onboarding from './pages/onboarding';
 import SelectRepo from './pages/selectRepo';
 import Hotspots from './pages/hotspots';
 import RecentChanges from './pages/commitHistory';
+import PersonalBranding from './pages/personalBranding';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
       <Route path="/onboarding/:repoId" element={<Onboarding />} />
       <Route path="/hotspots/:repoId" element={<Hotspots />} />
       <Route path="/commits/:repoId" element={<RecentChanges />} />
+      <Route path="/personal-branding/:repoId" element={<PersonalBranding />} />
       <Route path="/selectrepo" element={<SelectRepo />} />
     </Routes>
   );

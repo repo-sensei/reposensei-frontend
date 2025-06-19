@@ -29,6 +29,7 @@ export default function DashboardSidebar({ repoId, user }) {
   else if (location.pathname.includes("/docs")) setActive("architecture");
   else if (location.pathname.includes("/hotspots")) setActive("hotspots");
   else if (location.pathname.includes("/commits")) setActive("changes");
+  else if (location.pathname.includes("/personal-branding")) setActive("personal-branding");
   else setActive("profile");
 }, [location.pathname]);
 
@@ -87,6 +88,15 @@ export default function DashboardSidebar({ repoId, user }) {
       icon: <Icon icon="solar:suitcase-bold" width="22" height="22" />,
       onClick: () =>
         navigate(`/onboarding/${encodeURIComponent(repoId)}`, {
+          state: { user },
+        }),
+    },
+    {
+      id: "personal-branding",
+      label: "Personal Branding",
+      icon: <Icon icon="mdi:account-star" width="22" height="22" />,
+      onClick: () =>
+        navigate(`/personal-branding/${encodeURIComponent(repoId)}`, {
           state: { user },
         }),
     },
