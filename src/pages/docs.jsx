@@ -29,11 +29,16 @@ export default function DocsArchitecture() {
   return (
     <MainLayout user={user} repoId={repoId}>
 
-          <section className="mb-8">
-            <h3 className="text-2xl font-semibold mb-2">Architecture Graph</h3>
-            <div className="border border-gray-700 p-4 rounded-lg bg-[#1a1d1f] flex justify-center">
-              <ArchitectureGraph repoId={decodedRepoId} />
-            </div>
+          <section className="mb-8 p-20">
+           <h3 className="text-3xl font-semibold text-white mb-2">
+      <span className="text-[#C2C2C2] font-medium">Repository</span> Architecture
+    </h3>
+    <p className="text-l text-[#D6D6D6] mb-10">Structure and relationship between modules</p>
+           
+           <div className="w-full h-[500px] bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+            <ArchitectureGraph repoId={repoId} />
+          </div>
+           
           </section>
        
       </MainLayout>

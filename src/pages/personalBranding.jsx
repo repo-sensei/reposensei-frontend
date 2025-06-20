@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import axios from 'axios';
-import { supabase } from '../supabaseClient';
 import MainLayout from '../components/common/MainLayout';
+import GitHubInsights from '../components/GitHubInsights';
+import ResumeSection from '../components/ResumeSection';
 
 export default function PersonalBranding() {
   const { repoId } = useParams();
@@ -10,12 +11,15 @@ export default function PersonalBranding() {
   const navigate = useNavigate();
 
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [tab, setTab] = useState('insights');
   const [githubUsername, setGithubUsername] = useState(null);
+  const [githubInsights, setGithubInsights] = useState(null);
   const [resumeSection, setResumeSection] = useState(null);
   const [error, setError] = useState(null);
 
-  // Form state
+  const [loadingInsights, setLoadingInsights] = useState(false);
+  const [loadingResume, setLoadingResume] = useState(false); // for ResumeSection
+
   const [role, setRole] = useState('Developer');
   const [projectName, setProjectName] = useState('');
   const [startDate, setStartDate] = useState('');
@@ -30,59 +34,37 @@ export default function PersonalBranding() {
     }
 
     setUser(incomingUser);
-    setProjectName(repoId.split('/')[1] || 'Project'); // Extract repo name
+    setProjectName(repoId.split('/')[1] || 'Project');
+
+    const now = new Date();
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(now.getFullYear() - 1);
+
+    setStartDate(oneYearAgo.toISOString().split('T')[0]);
+    setEndDate(now.toISOString().split('T')[0]);
+
+    fetchGithubInsights(incomingUser.id, repoId, oneYearAgo, now);
   }, []);
 
-  const testGitHubUsername = async () => {
-    if (!user) return;
-    
-    setLoading(true);
-    setError(null);
-    
+  const fetchGithubInsights = async (userId, repoId, start, end) => {
+    setLoadingInsights(true);
     try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/api/personal-branding/test-username/${user.id}`
-      );
-      
-      setGithubUsername(response.data.githubUsername);
-      console.log('GitHub username test result:', response.data);
-      
-    } catch (err) {
-      console.error('GitHub username test error:', err);
-      setError(err.response?.data?.error || 'Failed to test GitHub username mapping');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const generateResumeSection = async () => {
-    if (!user || !repoId) return;
-    
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/personal-branding/resume-section`,
+      const res = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/api/personal-branding/github-insights`,
         {
           repoUrl: `https://github.com/${repoId}`,
-          repoId,
-          userId: user.id,
-          role,
-          projectName,
-          startDate,
-          endDate
+          userId,
+          startDate: start.toISOString().split('T')[0],
+          endDate: end.toISOString().split('T')[0],
         }
       );
-      
-      setResumeSection(response.data.resumeSection);
-      console.log('Resume section generated:', response.data);
-      
+      setGithubInsights(res.data);
+      setGithubUsername(res.data?.contributions?.commits?.[0]?.author || '');
     } catch (err) {
-      console.error('Resume generation error:', err);
-      setError(err.response?.data?.error || 'Failed to generate resume section');
+      setGithubInsights(null);
+      setError('Failed to fetch GitHub insights');
     } finally {
-      setLoading(false);
+      setLoadingInsights(false);
     }
   };
 
@@ -90,94 +72,95 @@ export default function PersonalBranding() {
 
   return (
     <MainLayout user={user} repoId={repoId}>
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6 text-white">
-          Personal Branding - {repoId}
-        </h1>
+      <div className="max-w-full mx-auto p-16 pl-[150px] pr-[150px]">
+        <p className="text-[#BFBFBF] mb-8 text-sm">{repoId}</p>
 
-        {/* Resume Generation Section */}
-        <div className="bg-white rounded-lg p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Generate Resume Section</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Role
-              </label>
-              <input
-                type="text"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., Frontend Developer"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Project Name
-              </label>
-              <input
-                type="text"
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., E-commerce Platform"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Start Date
-              </label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                End Date
-              </label>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+        <div className="flex items-end justify-between mb-2">
+          <div>
+            <p className="text-white font-medium mb-2">
+              Welcome{' '}
+              <span className="text-[#5DA3FF]">
+                {githubUsername || 'Contributor'}
+              </span>
+            </p>
+            <h3 className="text-2xl font-semibold text-white mb-2">
+              <span className="text-[#C2C2C2] font-medium">Your</span> Contribution Canvas
+            </h3>
           </div>
 
-          <button
-            onClick={generateResumeSection}
-            disabled={loading}
-            className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded disabled:opacity-50"
-          >
-            {loading ? 'Generating...' : 'Generate Resume Section'}
-          </button>
-        </div>
-
-        {/* Generated Resume Section */}
-        {resumeSection && (
-          <div className="bg-white rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">Generated Resume Section</h2>
-            <div className="bg-gray-50 p-4 rounded border">
-              <pre className="whitespace-pre-wrap text-sm text-gray-800 font-mono">
-                {resumeSection}
-              </pre>
-            </div>
+          <div className="flex space-x-4 mb-4">
             <button
-              onClick={() => navigator.clipboard.writeText(resumeSection)}
-              className="mt-4 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+              className={`flex items-center gap-2 text-left capitalize text-sm py-1 px-2 rounded transition-all ${
+                tab === 'insights'
+                  ? 'bg-gradient-to-r from-[#CAF5BB] to-[#2F89FF] bg-clip-text text-transparent font-semibold'
+                  : 'text-[#D3D3D3] hover:text-blue-300'
+              }`}
+              onClick={() => setTab('insights')}
             >
-              Copy to Clipboard
+              <div
+                className={`w-2.5 h-2.5 rounded-full transition-all ${
+                  tab === 'insights'
+                    ? 'bg-[#CAF5BB] shadow-[0_0_6px_2px_rgba(202,245,187,0.5)]'
+                    : 'bg-[#D3D3D3]'
+                }`}
+              />
+              GitHub Insights
+            </button>
+
+            <button
+              className={`flex items-center gap-2 text-left capitalize text-sm py-1 px-2 rounded transition-all ${
+                tab === 'resume'
+                  ? 'bg-gradient-to-r from-[#CAF5BB] to-[#2F89FF] bg-clip-text text-transparent font-semibold'
+                  : 'text-[#D3D3D3] hover:text-blue-300'
+              }`}
+              onClick={() => setTab('resume')}
+            >
+              <div
+                className={`w-2.5 h-2.5 rounded-full transition-all ${
+                  tab === 'resume'
+                    ? 'bg-[#CAF5BB] shadow-[0_0_6px_2px_rgba(202,245,187,0.5)]'
+                    : 'bg-[#D3D3D3]'
+                }`}
+              />
+              Impact Statement
             </button>
           </div>
+        </div>
+
+        <div className="border-b border-[#363636] mb-6"></div>
+
+        {tab === 'insights' && (
+          loadingInsights ? (
+            <div className="text-white text-center mt-10">Loading GitHub Insights...</div>
+          ) : (
+            <GitHubInsights
+              githubUsername={githubUsername}
+              githubInsights={githubInsights}
+            />
+          )
+        )}
+
+        {tab === 'resume' && (
+          <ResumeSection
+            user={user}
+            repoId={repoId}
+            role={role}
+            setRole={setRole}
+            projectName={projectName}
+            setProjectName={setProjectName}
+            startDate={startDate}
+            setStartDate={setStartDate}
+            endDate={endDate}
+            setEndDate={setEndDate}
+            resumeSection={resumeSection}
+            setResumeSection={setResumeSection}
+            loading={loadingResume}
+            setLoading={setLoadingResume}
+            setError={setError}
+            username={githubUsername}
+          />
         )}
       </div>
     </MainLayout>
   );
-} 
+}

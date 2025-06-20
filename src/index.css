@@ -47,3 +47,23 @@ body {
 .custom-html li {
   @apply mb-1;
 }
+/* Apply to modal scrollable area */
+.custom-scroll {
+  scrollbar-width: thin;             /* Firefox */
+  scrollbar-color: #4B5563 transparent;
+}
+
+/* For Chrome, Edge, Safari */
+.custom-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  background-color: #4B5563;         /* soft gray */
+  border-radius: 8px;
+  border: none;
+}

@@ -12,7 +12,6 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
-      <Route path="/dashboard/:repoId" element={<Dashboard />} />
       <Route path="/docs/:repoId" element={<DocsArchitecture />} />
       <Route path="/onboarding/:repoId" element={<Onboarding />} />
       <Route path="/hotspots/:repoId" element={<Hotspots />} />
