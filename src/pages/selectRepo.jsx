@@ -58,7 +58,7 @@ const SelectRepo = () => {
 
   const handleContinue = () => {
     if (selectedRepoId) {
-      navigate(`/dashboard/${encodeURIComponent(selectedRepoId)}`, {
+      navigate(`/personal-branding/${encodeURIComponent(selectedRepoId)}`, {
         state: { user }
       });
     } else {
@@ -70,7 +70,7 @@ const SelectRepo = () => {
      <div className="relative">
       <Header user={user} />
    
-    <div className="min-h-screen text-white p-6 flex flex-col items-center relative overflow-hidden">
+    <div className="min-h-screen text-white  flex flex-col items-center relative overflow-hidden">
         <div className="absolute top-6 left-8 z-10 ">
         <div className="flex items-center space-x-4">
         {/* Logo */}
