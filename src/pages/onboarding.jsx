@@ -334,7 +334,7 @@ const fetchCriticalTasks = async () => {
   <>
     {generating && !overviewHtml && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#21262D] bg-opacity-60 backdrop-blur-sm">
-        <div className="bg-black border border-[#2c2f31] rounded-2xl p-10 text-center shadow-2xl w-full max-w-xl">
+        <div className="bg-[#1B2027] border border-[#2c2f31] rounded-2xl p-10 text-center shadow-2xl w-full max-w-xl">
           <h3 className="text-2xl font-bold text-white mb-4 tracking-wide">
             Generating Smart Overview...
           </h3>
@@ -408,7 +408,7 @@ const fetchCriticalTasks = async () => {
   <>
     {generatingCritical && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#21262D] bg-opacity-60 backdrop-blur-sm">
-        <div className="bg-black border border-[#2c2f31] rounded-2xl p-10 text-center shadow-2xl w-full max-w-xl">
+        <div className="bg-[#1B2027] border border-[#2c2f31] rounded-2xl p-10 text-center shadow-2xl w-full max-w-xl">
           <h3 className="text-2xl font-bold text-white mb-4 tracking-wide">
             Auditing Code Quality...
           </h3>
