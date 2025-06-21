@@ -114,10 +114,37 @@ const OnboardingTasks = ({ tasks, loading, generating, onGenerate, onComplete })
         <>
           {/* Tasks View */}
           {!showReadme && (
-          <div className="mt-6">
-            {renderTaskCards(shuffle([...tasks]), 'uniform')}
-          </div>
-        )}
+  <div className="mt-6">
+    {/* Architecture Overview Box */}
+   {overviewTask && (
+  <div className="bg-[#1B2027] p-8 rounded-xl mb-8 border-l-4 border-blue-400 shadow-md">
+    <h4 className="text-white text-xl font-semibold mb-4">Architecture Overview</h4>
+    <div className="space-y-4 text-sm text-gray-300 leading-relaxed">
+      {(() => {
+        const desc = overviewTask.description || '';
+        const sentences = desc.match(/[^.!?]+[.!?]+[\])'"`’”]*\s*/g) || [desc];
+        const splitIndex = Math.ceil(sentences.length / 2);
+        const firstHalf = sentences.slice(0, splitIndex).join('').trim();
+        const secondHalf = sentences.slice(splitIndex).join('').trim();
+
+        return (
+          <>
+            <p>{firstHalf}</p>
+            <p>{secondHalf}</p>
+          </>
+        );
+      })()}
+    </div>
+  </div>
+)}
+
+    {/* Task Cards */}
+    {renderTaskCards(
+      shuffle([...tasks.filter((task) => task._id !== overviewTask?._id)]),
+      'uniform'
+    )}
+  </div>
+)}
 
 
           {/* README Side Panel */}

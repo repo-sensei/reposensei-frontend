@@ -50,10 +50,19 @@ export default function DashboardSidebar({ repoId, user }) {
   const menu = [
     {
       id: "personal-branding",
-      label: "Personal Branding",
+      label: "Dashboard",
       icon: <Icon icon="mage:dashboard-4" width="22" height="22" />,
       onClick: () =>
         navigate(`/personal-branding/${encodeURIComponent(repoId)}`, {
+          state: { user },
+        }),
+    },
+    {
+      id: "onboarding",
+      label: "Onboarding",
+      icon: <Icon icon="solar:suitcase-bold" width="22" height="22" />,
+      onClick: () =>
+        navigate(`/onboarding/${encodeURIComponent(repoId)}`, {
           state: { user },
         }),
     },
@@ -83,15 +92,7 @@ export default function DashboardSidebar({ repoId, user }) {
           state: { user },
         }),
     },
-    {
-      id: "onboarding",
-      label: "Onboarding",
-      icon: <Icon icon="solar:suitcase-bold" width="22" height="22" />,
-      onClick: () =>
-        navigate(`/onboarding/${encodeURIComponent(repoId)}`, {
-          state: { user },
-        }),
-    },
+    
     
   ];
 
@@ -170,7 +171,7 @@ export default function DashboardSidebar({ repoId, user }) {
 
   {/* Bottom Section: Action Buttons + Collapse Toggle */}
   <div className="flex flex-col items-center space-y-4">
-      <button
+      <button onClick={() => window.open("https://reposensei-93e6.vercel.app", "_blank")}
   className={classNames(
     "transition rounded-xl w-full",
     {
