@@ -35,6 +35,32 @@ const SelectRepo = () => {
     fetchRepos();
   }, [user]);
 
+  // Add session/token sync logic
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('[selectRepo] checkSession:', session);
+      if (session && session.access_token) {
+        localStorage.setItem('token', session.access_token);
+      }
+    };
+
+    checkSession();
+
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('[selectRepo] onAuthStateChange:', event, session);
+      if (event === 'SIGNED_IN' && session && session.access_token) {
+        localStorage.setItem('token', session.access_token);
+      } else if (event === 'SIGNED_OUT') {
+        localStorage.removeItem('token');
+      }
+    });
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, []);
+
   const fetchRepos = async () => {
     const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/repo/list`, {
       params: { userId: user.id }

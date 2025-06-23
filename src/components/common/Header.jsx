@@ -10,6 +10,7 @@ const Header = ({ user }) => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    localStorage.removeItem('token');
     navigate('/');
   };
 

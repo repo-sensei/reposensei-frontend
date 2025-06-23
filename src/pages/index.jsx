@@ -10,15 +10,23 @@ export default function LandingPage() {
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
+      console.log('checkSession:', session);
+      if (session && session.access_token) {
+        localStorage.setItem('token', session.access_token);
         navigate('/selectrepo');
       }
     };
 
     checkSession();
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) navigate('/selectrepo');
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('onAuthStateChange:', event, session);
+      if (event === 'SIGNED_IN' && session && session.access_token) {
+        localStorage.setItem('token', session.access_token);
+        navigate('/selectrepo');
+      } else if (event === 'SIGNED_OUT') {
+        localStorage.removeItem('token');
+      }
     });
 
     return () => {

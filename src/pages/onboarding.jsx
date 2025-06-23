@@ -41,7 +41,8 @@ function Onboarding() {
 
   useEffect(() => {
     const incomingUser = location.state?.user;
-    
+    console.log('[onboarding] incomingUser:', incomingUser, 'repoId:', repoId);
+
     if (!incomingUser || !repoId) {
       navigate('/selectrepo');
       return;
@@ -55,12 +56,15 @@ function Onboarding() {
   const fetchTasks = async () => {
     setLoading(true);
     try {
+      console.log('[onboarding] Fetching tasks for', repoId);
       const res = await axios.get(`${BACKEND}/api/tasks/${encodeURIComponent(repoId)}`);
       setTasks(res.data.tasks || []);
+      console.log('[onboarding] Tasks response:', res.data);
     } catch (err) {
-      console.error('Failed to fetch tasks:', err);
+      console.error('[onboarding] Failed to fetch tasks:', err);
     } finally {
       setLoading(false);
+      console.log('[onboarding] fetchTasks done, loading set to false');
     }
   };
 
@@ -92,29 +96,36 @@ function Onboarding() {
   }, [repoId]);
 
   useEffect(() => {
-  if (!userId || !repoId) return;
-
-  const startOnboarding = async () => {
-    try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/onboarding/start`,
-        { userId, repoId },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        }
-      );
-      setStep(response.data.step);
-    } catch (err) {
-      setError('Failed to start onboarding');
-    } finally {
-      setLoading(false);
+    if (!userId || !repoId) {
+      console.log('[onboarding] Not starting onboarding, missing userId or repoId', userId, repoId);
+      return;
     }
-  };
 
-  startOnboarding();
-}, [userId, repoId]);
+    const startOnboarding = async () => {
+      try {
+        console.log('[onboarding] Starting onboarding for', userId, repoId);
+        const response = await axios.post(
+          `${import.meta.env.VITE_BACKEND_URL}/api/onboarding/start`,
+          { userId, repoId },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+          }
+        );
+        setStep(response.data.step);
+        console.log('[onboarding] Onboarding start response:', response.data);
+      } catch (err) {
+        setError('Failed to start onboarding');
+        console.error('[onboarding] Failed to start onboarding:', err);
+      } finally {
+        setLoading(false);
+        console.log('[onboarding] startOnboarding done, loading set to false');
+      }
+    };
+
+    startOnboarding();
+  }, [userId, repoId]);
 
 
   const handleNext = async (input) => {
@@ -234,10 +245,10 @@ const fetchCriticalTasks = async () => {
     {step.stepId === 'choose-role' && (
       <div className="max-w-5xl mx-auto text-center">
         <h1 className="text-4xl sm:text-4xl font-normal  text-center z-10 text-white mt-40">
-        How do you want to explore this <span className="bg-gradient-to-r from-[#CAF5BB] to-[#2F89FF] bg-clip-text text-transparent">Codebase</span> ?
-      </h1>
+          How do you want to explore this <span className="bg-gradient-to-r from-[#CAF5BB] to-[#2F89FF] bg-clip-text text-transparent">Codebase</span> ?
+        </h1>
         <p className="text-xl text-[#d3d3d3] text-500 mb-12 mt-5">
-          {step.prompt || 'Choose how you’d like to explore this project.'}
+          {step.prompt || "Choose how you'd like to explore this project."}
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -424,7 +435,7 @@ const fetchCriticalTasks = async () => {
               />
             ))}
           </div>
-          <p className="text-sm text-gray-500 italic">This won’t take long.</p>
+          <p className="text-sm text-gray-500 italic">This won't take long.</p>
         </div>
       </div>
     )}
@@ -454,7 +465,7 @@ const fetchCriticalTasks = async () => {
           </button>
 
           <p className="text-sm text-gray-500 mt-4 italic">
-            * Ideal for identifying pain points in your role’s area of the codebase.
+            * Ideal for identifying pain points in your role's area of the codebase.
           </p>
         </div>
       </div>

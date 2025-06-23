@@ -4,10 +4,10 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   define: {
-    // Use placeholders that will be replaced at runtime
-    'import.meta.env.VITE_SUPABASE_URL': JSON.stringify('VITE_SUPABASE_URL_PLACEHOLDER'),
-    'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify('VITE_SUPABASE_ANON_KEY_PLACEHOLDER'),
-    'import.meta.env.VITE_BACKEND_URL': JSON.stringify('VITE_BACKEND_URL_PLACEHOLDER'),
+    // Use actual environment variables during build
+    'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(process.env.VITE_SUPABASE_URL),
+    'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(process.env.VITE_SUPABASE_ANON_KEY),
+    'import.meta.env.VITE_BACKEND_URL': JSON.stringify(process.env.VITE_BACKEND_URL),
   },
   server: {
     proxy: {
